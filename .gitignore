@@ -1,0 +1,20 @@
+# Gradle
+.gradle
+build
+
+# Kotlin
+.kotlin
+
+# IDE
+.idea
+*.iml
+local.properties
+
+# Android
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# Claude Code local settings (user-specific)
+.claude/settings.local.json
