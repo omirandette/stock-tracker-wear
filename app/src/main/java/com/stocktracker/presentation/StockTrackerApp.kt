@@ -31,7 +31,6 @@ fun StockTrackerApp(app: StockApp) {
                 StockDetailScreen(
                     viewModel = detailViewModel,
                     initialStockIndex = stockIndex,
-                    onBack = { navController.popBackStack() },
                 )
             }
         }
