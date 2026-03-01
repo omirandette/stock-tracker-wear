@@ -67,7 +67,7 @@ fun WatchlistScreen(
         modifier = Modifier
             .fillMaxSize()
             .onRotaryScrollEvent { event ->
-                coroutineScope.launch { listState.animateScrollBy(event.verticalScrollPixels) }
+                coroutineScope.launch { listState.dispatchRawDelta(event.verticalScrollPixels) }
                 true
             }
             .focusRequester(listFocusRequester)
