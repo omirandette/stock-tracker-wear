@@ -60,32 +60,28 @@ class StockRepository(
         period: TimePeriod,
         apiKey: String,
     ): List<ChartPoint> {
-        val responseBody = when (period) {
-            TimePeriod.ONE_DAY -> api.getTimeSeries(
-                function = "TIME_SERIES_INTRADAY",
+        val responseBody = if (period == TimePeriod.TWELVE_MONTHS) {
+            api.getTimeSeries(
+                function = "TIME_SERIES_WEEKLY",
                 symbol = symbol,
                 apiKey = apiKey,
-                interval = "5min",
             )
-            else -> api.getTimeSeries(
+        } else {
+            api.getTimeSeries(
                 function = "TIME_SERIES_DAILY",
                 symbol = symbol,
                 apiKey = apiKey,
-                outputSize = if (period == TimePeriod.TWELVE_MONTHS) "full" else "compact",
+                outputSize = "compact",
             )
         }
 
         val json = JsonParser.parseString(responseBody.string()).asJsonObject
-        val seriesKey = json.keySet().firstOrNull { it.startsWith("Time Series") }
-            ?: throw IllegalStateException("No time series data for $symbol")
+        val seriesKey = json.keySet().firstOrNull { it.contains("Time Series") }
+            ?: throw IllegalStateException("No time series data for $symbol: ${json.keySet()}")
         val series = json.getAsJsonObject(seriesKey)
 
         val cutoff = calculateCutoff(period)
-        val formatter = if (period == TimePeriod.ONE_DAY) {
-            SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US)
-        } else {
-            SimpleDateFormat("yyyy-MM-dd", Locale.US)
-        }
+        val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.US)
 
         return series.entrySet()
             .mapNotNull { (dateStr, values) ->
@@ -102,6 +98,7 @@ class StockRepository(
         val cal = Calendar.getInstance()
         when (period) {
             TimePeriod.ONE_DAY -> cal.add(Calendar.DAY_OF_YEAR, -1)
+            TimePeriod.FIVE_DAYS -> cal.add(Calendar.DAY_OF_YEAR, -7)
             TimePeriod.THREE_MONTHS -> cal.add(Calendar.MONTH, -3)
             TimePeriod.SIX_MONTHS -> cal.add(Calendar.MONTH, -6)
             TimePeriod.TWELVE_MONTHS -> cal.add(Calendar.YEAR, -1)
