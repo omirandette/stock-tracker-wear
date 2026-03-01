@@ -1,13 +1,10 @@
 package com.stocktracker.presentation
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
@@ -32,34 +29,29 @@ fun StockDetailScreen(
 
     if (stocks.isEmpty()) return
 
-    val verticalPagerState = rememberPagerState(
-        initialPage = initialStockIndex.coerceIn(0, stocks.size - 1),
-        pageCount = { stocks.size },
+    val stock = stocks[initialStockIndex.coerceIn(0, stocks.size - 1)]
+    val periods = TimePeriod.activePeriods()
+
+    val pagerState = rememberPagerState(
+        initialPage = 0,
+        pageCount = { periods.size },
     )
 
+    val chartData by viewModel.chartData.collectAsState()
+    val isLoading by viewModel.isChartLoading.collectAsState()
+    val chartError by viewModel.chartError.collectAsState()
+
+    val currentPeriod = periods[pagerState.currentPage]
+
+    LaunchedEffect(stock.symbol, currentPeriod) {
+        viewModel.loadChart(stock.symbol, currentPeriod)
+    }
+
     VerticalPager(
-        state = verticalPagerState,
+        state = pagerState,
         modifier = Modifier.fillMaxSize(),
-    ) { stockIndex ->
-        val stock = stocks[stockIndex]
-        val periods = TimePeriod.entries
-        val horizontalPagerState = rememberPagerState(
-            initialPage = 0,
-            pageCount = { periods.size },
-        )
-
-        val chartData by viewModel.chartData.collectAsState()
-        val isLoading by viewModel.isChartLoading.collectAsState()
-        val chartError by viewModel.chartError.collectAsState()
-
-        val currentPeriod = periods[horizontalPagerState.currentPage]
-        val isCurrentPage = verticalPagerState.currentPage == stockIndex
-
-        LaunchedEffect(stock.symbol, currentPeriod, isCurrentPage) {
-            if (isCurrentPage) {
-                viewModel.loadChart(stock.symbol, currentPeriod)
-            }
-        }
+    ) { periodIndex ->
+        val period = periods[periodIndex]
 
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -74,51 +66,51 @@ fun StockDetailScreen(
                 text = "$${String.format("%.2f", stock.price)}",
                 style = MaterialTheme.typography.body1,
             )
+
+            val periodChange = if (periodIndex == pagerState.currentPage && chartData.size >= 2) {
+                val startPrice = chartData.first().price
+                val endPrice = chartData.last().price
+                val change = endPrice - startPrice
+                val changePct = if (startPrice != 0.0) (change / startPrice) * 100 else 0.0
+                Triple(change, changePct, true)
+            } else {
+                Triple(stock.change, stock.changePercent.removeSuffix("%").toDoubleOrNull() ?: 0.0, false)
+            }
+
             Text(
-                text = "${if (stock.change >= 0) "+" else ""}${String.format("%.2f", stock.change)} (${stock.changePercent})",
-                color = if (stock.change >= 0) Color.Green else Color.Red,
+                text = "${if (periodChange.first >= 0) "+" else ""}${String.format("%.2f", periodChange.first)} (${String.format("%.2f", periodChange.second)}%)",
+                color = if (periodChange.first >= 0) Color.Green else Color.Red,
                 style = MaterialTheme.typography.caption2,
             )
 
-            HorizontalPager(
-                state = horizontalPagerState,
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
-            ) { periodIndex ->
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    if (periodIndex == horizontalPagerState.currentPage && isCurrentPage) {
-                        when {
-                            isLoading -> CircularProgressIndicator()
-                            chartError != null -> Text(
-                                chartError!!,
-                                color = Color.Red,
-                                style = MaterialTheme.typography.caption3,
-                            )
-                            else -> PriceChart(
-                                points = chartData,
-                                modifier = Modifier.fillMaxSize().padding(4.dp),
-                            )
-                        }
+                contentAlignment = Alignment.Center,
+            ) {
+                if (periodIndex == pagerState.currentPage) {
+                    when {
+                        isLoading -> CircularProgressIndicator()
+                        chartError != null -> Text(
+                            chartError!!,
+                            color = Color.Red,
+                            style = MaterialTheme.typography.caption3,
+                        )
+                        else -> PriceChart(
+                            points = chartData,
+                            modifier = Modifier.fillMaxSize().padding(4.dp),
+                        )
                     }
                 }
             }
 
-            Row(
+            Text(
+                text = period.label,
+                style = MaterialTheme.typography.caption3,
+                color = Color.White,
                 modifier = Modifier.padding(bottom = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-            ) {
-                periods.forEachIndexed { index, period ->
-                    Text(
-                        text = period.label,
-                        style = MaterialTheme.typography.caption3,
-                        color = if (index == horizontalPagerState.currentPage) Color.White else Color.DarkGray,
-                    )
-                }
-            }
+            )
         }
     }
 }

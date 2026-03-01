@@ -5,7 +5,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.wear.compose.navigation.SwipeDismissableNavHost
 import androidx.wear.compose.navigation.composable
 import androidx.wear.compose.navigation.rememberSwipeDismissableNavController
-import com.stocktracker.BuildConfig
 import com.stocktracker.StockApp
 import com.stocktracker.presentation.theme.StockTrackerTheme
 
@@ -13,10 +12,10 @@ import com.stocktracker.presentation.theme.StockTrackerTheme
 fun StockTrackerApp(app: StockApp) {
     val navController = rememberSwipeDismissableNavController()
     val watchlistViewModel: WatchlistViewModel = viewModel(
-        factory = WatchlistViewModel.Factory(app.repository, BuildConfig.ALPHA_VANTAGE_KEY)
+        factory = WatchlistViewModel.Factory(app.repository)
     )
     val detailViewModel: StockDetailViewModel = viewModel(
-        factory = StockDetailViewModel.Factory(app.repository, BuildConfig.ALPHA_VANTAGE_KEY)
+        factory = StockDetailViewModel.Factory(app.repository)
     )
 
     StockTrackerTheme {
