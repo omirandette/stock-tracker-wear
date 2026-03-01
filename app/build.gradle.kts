@@ -54,7 +54,6 @@ android {
 }
 
 dependencies {
-    implementation(platform(libs.compose.bom))
     implementation(libs.wear.compose.material)
     implementation(libs.wear.compose.foundation)
     implementation(libs.wear.compose.navigation)
