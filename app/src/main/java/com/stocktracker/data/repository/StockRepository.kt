@@ -7,6 +7,7 @@ import com.stocktracker.model.ChartPoint
 import com.stocktracker.model.Stock
 import com.stocktracker.model.TimePeriod
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 class StockRepository(
@@ -31,11 +32,7 @@ class StockRepository(
     }
 
     suspend fun refreshAll() {
-        val currentSymbols = mutableListOf<String>()
-        dao.getAll().collect { entities ->
-            currentSymbols.addAll(entities.map { it.symbol })
-            return@collect
-        }
+        val currentSymbols = dao.getAll().first().map { it.symbol }
         for (symbol in currentSymbols) {
             try {
                 addStock(symbol)
