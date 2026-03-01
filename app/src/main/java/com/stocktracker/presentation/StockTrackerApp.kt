@@ -24,6 +24,13 @@ fun StockTrackerApp(app: StockApp) {
                 WatchlistScreen(
                     viewModel = watchlistViewModel,
                     onStockClick = { index -> navController.navigate("detail/$index") },
+                    onAddClick = { navController.navigate("addStock") },
+                )
+            }
+            composable("addStock") {
+                AddStockScreen(
+                    viewModel = watchlistViewModel,
+                    onBack = { navController.popBackStack() },
                 )
             }
             composable("detail/{stockIndex}") { backStackEntry ->

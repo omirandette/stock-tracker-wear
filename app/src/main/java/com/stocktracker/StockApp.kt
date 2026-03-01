@@ -3,6 +3,7 @@ package com.stocktracker
 import android.app.Application
 import com.stocktracker.data.api.yahoo.YahooChartApi
 import com.stocktracker.data.api.yahoo.YahooFinanceDataSource
+import com.stocktracker.data.api.yahoo.YahooSearchApi
 import com.stocktracker.data.local.StockDatabase
 import com.stocktracker.data.repository.StockRepository
 import okhttp3.Interceptor
@@ -40,7 +41,8 @@ class StockApp : Application() {
             .build()
 
         val api = retrofit.create(YahooChartApi::class.java)
-        val dataSource = YahooFinanceDataSource(api)
+        val searchApi = retrofit.create(YahooSearchApi::class.java)
+        val dataSource = YahooFinanceDataSource(api, searchApi)
         val db = StockDatabase.create(this)
 
         repository = StockRepository(dataSource, db.stockDao())

@@ -8,6 +8,8 @@ import com.stocktracker.data.api.yahoo.ChartResult
 import com.stocktracker.data.api.yahoo.Indicators
 import com.stocktracker.data.api.yahoo.QuoteIndicator
 import com.stocktracker.data.api.yahoo.YahooChartResponse
+import com.stocktracker.data.api.yahoo.YahooSearchQuote
+import com.stocktracker.data.api.yahoo.YahooSearchResponse
 
 fun chartResponse(
     symbol: String = "AAPL",
@@ -35,3 +37,10 @@ fun quoteResult(
     change: Double = 2.0,
     changePercent: String = "1.35%",
 ) = QuoteResult(symbol, price, change, changePercent)
+
+fun searchResponse(
+    quotes: List<YahooSearchQuote> = listOf(
+        YahooSearchQuote("AAPL", "Apple Inc.", "Apple Inc.", "NASDAQ", "EQUITY"),
+        YahooSearchQuote("APLE", "Apple Hospitality REIT", null, "NYSE", "EQUITY"),
+    ),
+) = YahooSearchResponse(quotes = quotes)

@@ -2,6 +2,7 @@ package com.stocktracker.integration
 
 import com.stocktracker.data.api.yahoo.YahooChartApi
 import com.stocktracker.data.api.yahoo.YahooFinanceDataSource
+import com.stocktracker.data.api.yahoo.YahooSearchApi
 import com.stocktracker.model.TimePeriod
 import kotlinx.coroutines.test.runTest
 import okhttp3.mockwebserver.MockResponse
@@ -23,12 +24,13 @@ class YahooFinanceMockServerTest {
     fun setUp() {
         server = MockWebServer()
         server.start()
-        val api = Retrofit.Builder()
+        val retrofit = Retrofit.Builder()
             .baseUrl(server.url("/"))
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-            .create(YahooChartApi::class.java)
-        ds = YahooFinanceDataSource(api)
+        val api = retrofit.create(YahooChartApi::class.java)
+        val searchApi = retrofit.create(YahooSearchApi::class.java)
+        ds = YahooFinanceDataSource(api, searchApi)
     }
 
     @After
@@ -75,6 +77,25 @@ class YahooFinanceMockServerTest {
         server.enqueue(MockResponse().setResponseCode(404).setBody("{}"))
         ds.getQuote("BAD")
     }
+
+    @Test
+    fun `searchStocks JSON round-trip returns mapped results`() = runTest {
+        server.enqueue(MockResponse().setBody(SEARCH_JSON))
+        val results = ds.searchStocks("apple")
+        assertEquals(1, results.size)
+        assertEquals("AAPL", results[0].symbol)
+        assertEquals("Apple Inc.", results[0].name)
+        assertEquals("NASDAQ", results[0].exchange)
+    }
+
+    @Test
+    fun `searchStocks request path is correct`() = runTest {
+        server.enqueue(MockResponse().setBody(SEARCH_JSON))
+        ds.searchStocks("apple")
+        val request = server.takeRequest()
+        assertTrue(request.path!!.startsWith("/v1/finance/search?"))
+        assertTrue(request.path!!.contains("q=apple"))
+    }
 }
 
 private val QUOTE_JSON = """
@@ -117,5 +138,26 @@ private val CHART_NULL_CLOSE_JSON = """
     }],
     "error": null
   }
+}
+""".trimIndent()
+
+private val SEARCH_JSON = """
+{
+  "quotes": [
+    {
+      "symbol": "AAPL",
+      "shortname": "Apple Inc.",
+      "longname": "Apple Inc.",
+      "exchDisp": "NASDAQ",
+      "quoteType": "EQUITY"
+    },
+    {
+      "symbol": "AAPL240119C00100000",
+      "shortname": "AAPL Option",
+      "longname": null,
+      "exchDisp": "OPR",
+      "quoteType": "OPTION"
+    }
+  ]
 }
 """.trimIndent()

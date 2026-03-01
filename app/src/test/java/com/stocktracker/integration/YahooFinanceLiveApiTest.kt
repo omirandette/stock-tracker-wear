@@ -2,8 +2,10 @@ package com.stocktracker.integration
 
 import com.stocktracker.data.api.yahoo.YahooChartApi
 import com.stocktracker.data.api.yahoo.YahooFinanceDataSource
+import com.stocktracker.data.api.yahoo.YahooSearchApi
 import com.stocktracker.model.TimePeriod
 import com.stocktracker.testutil.LiveApiTest
+import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import okhttp3.OkHttpClient
 import org.junit.Assert.assertEquals
@@ -35,7 +37,8 @@ class YahooFinanceLiveApiTest {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(YahooChartApi::class.java)
-        ds = YahooFinanceDataSource(api)
+        val searchApi = mockk<YahooSearchApi>()
+        ds = YahooFinanceDataSource(api, searchApi)
     }
 
     @Test

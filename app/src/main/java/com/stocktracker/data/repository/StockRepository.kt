@@ -4,6 +4,7 @@ import com.stocktracker.data.api.StockDataSource
 import com.stocktracker.data.local.StockDao
 import com.stocktracker.data.local.StockEntity
 import com.stocktracker.model.ChartPoint
+import com.stocktracker.model.SearchResult
 import com.stocktracker.model.Stock
 import com.stocktracker.model.TimePeriod
 import kotlinx.coroutines.flow.Flow
@@ -48,6 +49,10 @@ class StockRepository(
 
     suspend fun getChartData(symbol: String, period: TimePeriod): List<ChartPoint> {
         return dataSource.getChartData(symbol, period)
+    }
+
+    suspend fun searchStocks(query: String): List<SearchResult> {
+        return dataSource.searchStocks(query)
     }
 
     private fun StockEntity.toStock() = Stock(

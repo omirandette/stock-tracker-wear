@@ -3,10 +3,14 @@ package com.stocktracker.data.api.yahoo
 import com.stocktracker.data.api.QuoteResult
 import com.stocktracker.data.api.StockDataSource
 import com.stocktracker.model.ChartPoint
+import com.stocktracker.model.SearchResult
 import com.stocktracker.model.TimePeriod
+
+private val EQUITY_TYPES = setOf("EQUITY", "ETF")
 
 class YahooFinanceDataSource(
     private val api: YahooChartApi,
+    private val searchApi: YahooSearchApi,
 ) : StockDataSource {
 
     override suspend fun getQuote(symbol: String): QuoteResult {
@@ -42,5 +46,19 @@ class YahooFinanceDataSource(
         return timestamps.zip(closes).mapNotNull { (ts, close) ->
             close?.let { ChartPoint(timestamp = ts * 1000, price = it) }
         }
+    }
+
+    override suspend fun searchStocks(query: String): List<SearchResult> {
+        val response = searchApi.search(query)
+        return response.quotes
+            .filter { it.quoteType in EQUITY_TYPES }
+            .take(5)
+            .map { quote ->
+                SearchResult(
+                    symbol = quote.symbol,
+                    name = quote.longname ?: quote.shortname ?: quote.symbol,
+                    exchange = quote.exchDisp ?: "",
+                )
+            }
     }
 }
