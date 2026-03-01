@@ -41,6 +41,17 @@ android {
     buildFeatures {
         compose = true
     }
+
+    testOptions {
+        unitTests {
+            isReturnDefaultValues = true
+            all {
+                it.useJUnit {
+                    excludeCategories("com.stocktracker.testutil.LiveApiTest")
+                }
+            }
+        }
+    }
 }
 
 dependencies {
@@ -66,4 +77,8 @@ dependencies {
     implementation(libs.coroutines.android)
 
     testImplementation(libs.junit)
+    testImplementation(libs.mockk)
+    testImplementation(libs.coroutines.test)
+    testImplementation(libs.turbine)
+    testImplementation(libs.okhttp.mockwebserver)
 }
