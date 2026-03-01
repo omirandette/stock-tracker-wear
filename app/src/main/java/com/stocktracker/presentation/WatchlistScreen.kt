@@ -2,7 +2,6 @@ package com.stocktracker.presentation
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,14 +19,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.rotary.onRotaryScrollEvent
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -36,7 +33,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
 import androidx.wear.compose.foundation.lazy.itemsIndexed
-import androidx.wear.compose.foundation.lazy.rememberScalingLazyListState
 import androidx.wear.compose.material.Button
 import androidx.wear.compose.material.Card
 import androidx.wear.compose.material.CircularProgressIndicator
@@ -44,7 +40,6 @@ import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Text
 import androidx.wear.compose.material.dialog.Dialog
 import com.stocktracker.model.Stock
-import kotlinx.coroutines.launch
 
 @Composable
 fun WatchlistScreen(
@@ -58,20 +53,8 @@ fun WatchlistScreen(
     var showAddDialog by remember { mutableStateOf(false) }
     var ticker by remember { mutableStateOf("") }
 
-    val listState = rememberScalingLazyListState()
-    val coroutineScope = rememberCoroutineScope()
-    val listFocusRequester = remember { FocusRequester() }
-
     ScalingLazyColumn(
-        state = listState,
-        modifier = Modifier
-            .fillMaxSize()
-            .onRotaryScrollEvent { event ->
-                coroutineScope.launch { listState.dispatchRawDelta(event.verticalScrollPixels) }
-                true
-            }
-            .focusRequester(listFocusRequester)
-            .focusable(),
+        modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         item {
@@ -121,10 +104,6 @@ fun WatchlistScreen(
                 showAddDialog = true
             }) { Text("+") }
         }
-    }
-
-    LaunchedEffect(Unit) {
-        listFocusRequester.requestFocus()
     }
 
     Dialog(
