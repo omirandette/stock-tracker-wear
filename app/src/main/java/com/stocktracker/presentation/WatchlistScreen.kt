@@ -1,5 +1,7 @@
 package com.stocktracker.presentation
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,7 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
-import androidx.wear.compose.foundation.lazy.items
+import androidx.wear.compose.foundation.lazy.itemsIndexed
 import androidx.wear.compose.material.Button
 import androidx.wear.compose.material.Card
 import androidx.wear.compose.material.CircularProgressIndicator
@@ -29,6 +31,7 @@ import com.stocktracker.model.Stock
 fun WatchlistScreen(
     viewModel: WatchlistViewModel,
     onAddClick: () -> Unit,
+    onStockClick: (Int) -> Unit,
 ) {
     val stocks by viewModel.stocks.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
@@ -69,8 +72,12 @@ fun WatchlistScreen(
             }
         }
 
-        items(stocks, key = { it.symbol }) { stock ->
-            StockCard(stock = stock, onRemove = { viewModel.removeStock(stock.symbol) })
+        itemsIndexed(stocks, key = { _, stock -> stock.symbol }) { index, stock ->
+            StockCard(
+                stock = stock,
+                onClick = { onStockClick(index) },
+                onLongClick = { viewModel.removeStock(stock.symbol) },
+            )
         }
 
         item { Spacer(modifier = Modifier.height(4.dp)) }
@@ -84,11 +91,17 @@ fun WatchlistScreen(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun StockCard(stock: Stock, onRemove: () -> Unit) {
+private fun StockCard(stock: Stock, onClick: () -> Unit, onLongClick: () -> Unit) {
     Card(
-        onClick = onRemove,
-        modifier = Modifier.fillMaxWidth(),
+        onClick = {},
+        modifier = Modifier
+            .fillMaxWidth()
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick,
+            ),
     ) {
         Column {
             Row(

@@ -1,11 +1,17 @@
 package com.stocktracker.data.repository
 
+import com.google.gson.JsonParser
 import com.stocktracker.data.api.StockApiService
 import com.stocktracker.data.local.StockDao
 import com.stocktracker.data.local.StockEntity
+import com.stocktracker.model.ChartPoint
 import com.stocktracker.model.Stock
+import com.stocktracker.model.TimePeriod
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 class StockRepository(
     private val api: StockApiService,
@@ -47,6 +53,67 @@ class StockRepository(
 
     suspend fun removeStock(symbol: String) {
         dao.delete(symbol)
+    }
+
+    suspend fun getChartData(
+        symbol: String,
+        period: TimePeriod,
+        apiKey: String,
+    ): List<ChartPoint> {
+        val responseBody = when (period) {
+            TimePeriod.ONE_DAY -> api.getTimeSeries(
+                function = "TIME_SERIES_INTRADAY",
+                symbol = symbol,
+                apiKey = apiKey,
+                interval = "5min",
+            )
+            else -> api.getTimeSeries(
+                function = "TIME_SERIES_DAILY",
+                symbol = symbol,
+                apiKey = apiKey,
+                outputSize = if (period == TimePeriod.TWELVE_MONTHS) "full" else "compact",
+            )
+        }
+
+        val json = JsonParser.parseString(responseBody.string()).asJsonObject
+        val seriesKey = json.keySet().firstOrNull { it.startsWith("Time Series") }
+            ?: throw IllegalStateException("No time series data for $symbol")
+        val series = json.getAsJsonObject(seriesKey)
+
+        val cutoff = calculateCutoff(period)
+        val formatter = if (period == TimePeriod.ONE_DAY) {
+            SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US)
+        } else {
+            SimpleDateFormat("yyyy-MM-dd", Locale.US)
+        }
+
+        return series.entrySet()
+            .mapNotNull { (dateStr, values) ->
+                val date = formatter.parse(dateStr) ?: return@mapNotNull null
+                if (date.time < cutoff) return@mapNotNull null
+                val close = values.asJsonObject.get("4. close").asString.toDoubleOrNull()
+                    ?: return@mapNotNull null
+                ChartPoint(timestamp = date.time, price = close)
+            }
+            .sortedBy { it.timestamp }
+    }
+
+    private fun calculateCutoff(period: TimePeriod): Long {
+        val cal = Calendar.getInstance()
+        when (period) {
+            TimePeriod.ONE_DAY -> cal.add(Calendar.DAY_OF_YEAR, -1)
+            TimePeriod.THREE_MONTHS -> cal.add(Calendar.MONTH, -3)
+            TimePeriod.SIX_MONTHS -> cal.add(Calendar.MONTH, -6)
+            TimePeriod.TWELVE_MONTHS -> cal.add(Calendar.YEAR, -1)
+            TimePeriod.YTD -> {
+                cal.set(Calendar.DAY_OF_YEAR, 1)
+                cal.set(Calendar.HOUR_OF_DAY, 0)
+                cal.set(Calendar.MINUTE, 0)
+                cal.set(Calendar.SECOND, 0)
+                cal.set(Calendar.MILLISECOND, 0)
+            }
+        }
+        return cal.timeInMillis
     }
 
     private fun StockEntity.toStock() = Stock(

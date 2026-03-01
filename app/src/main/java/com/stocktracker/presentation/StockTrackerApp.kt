@@ -12,22 +12,33 @@ import com.stocktracker.presentation.theme.StockTrackerTheme
 @Composable
 fun StockTrackerApp(app: StockApp) {
     val navController = rememberSwipeDismissableNavController()
-    val viewModel: WatchlistViewModel = viewModel(
+    val watchlistViewModel: WatchlistViewModel = viewModel(
         factory = WatchlistViewModel.Factory(app.repository, BuildConfig.ALPHA_VANTAGE_KEY)
+    )
+    val detailViewModel: StockDetailViewModel = viewModel(
+        factory = StockDetailViewModel.Factory(app.repository, BuildConfig.ALPHA_VANTAGE_KEY)
     )
 
     StockTrackerTheme {
         SwipeDismissableNavHost(navController = navController, startDestination = "watchlist") {
             composable("watchlist") {
                 WatchlistScreen(
-                    viewModel = viewModel,
+                    viewModel = watchlistViewModel,
                     onAddClick = { navController.navigate("add") },
+                    onStockClick = { index -> navController.navigate("detail/$index") },
                 )
             }
             composable("add") {
                 AddStockScreen(
-                    onAdd = { viewModel.addStock(it) },
+                    onAdd = { watchlistViewModel.addStock(it) },
                     onBack = { navController.popBackStack() },
+                )
+            }
+            composable("detail/{stockIndex}") { backStackEntry ->
+                val stockIndex = backStackEntry.arguments?.getString("stockIndex")?.toIntOrNull() ?: 0
+                StockDetailScreen(
+                    viewModel = detailViewModel,
+                    initialStockIndex = stockIndex,
                 )
             }
         }
