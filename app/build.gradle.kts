@@ -46,12 +46,25 @@ android {
         unitTests {
             isReturnDefaultValues = true
             all {
+                val isLive = gradle.startParameter.taskNames.any { task ->
+                    task.contains("testLiveApi", ignoreCase = true)
+                }
                 it.useJUnit {
-                    excludeCategories("com.stocktracker.testutil.LiveApiTest")
+                    if (isLive) {
+                        includeCategories("com.stocktracker.testutil.LiveApiTest")
+                    } else {
+                        excludeCategories("com.stocktracker.testutil.LiveApiTest")
+                    }
                 }
             }
         }
     }
+}
+
+tasks.register("testLiveApi") {
+    group = "verification"
+    description = "Run live Yahoo Finance API tests (requires network)"
+    dependsOn("testDebugUnitTest")
 }
 
 dependencies {
