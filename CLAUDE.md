@@ -21,6 +21,10 @@
 - JDK 17, Gradle with version catalogs
 - Keep Compose screens stateless; state lives in ViewModel
 
+## Shell Commands
+- Do not use arbitrary sleep values — default to `sleep 10` unless a longer wait is justified
+- Do not use arbitrary tail/head values — default to `tail -20` / `head -20` unless more lines are needed
+
 ## Git Workflow
 - Trunk-based development: short-lived feature branches, squash-merge to `main`
 - Branch protection on `main`: PRs required, CI must pass
