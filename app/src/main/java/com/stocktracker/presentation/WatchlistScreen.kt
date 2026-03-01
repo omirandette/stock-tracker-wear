@@ -36,7 +36,6 @@ import androidx.wear.compose.foundation.lazy.itemsIndexed
 import androidx.wear.compose.material.Button
 import androidx.wear.compose.material.Card
 import androidx.wear.compose.material.CircularProgressIndicator
-import androidx.wear.compose.material.CompactButton
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Text
 import androidx.wear.compose.material.dialog.Dialog
@@ -111,7 +110,7 @@ fun WatchlistScreen(
         showDialog = showAddDialog,
         onDismissRequest = { showAddDialog = false },
     ) {
-        val focusRequester = remember { FocusRequester() }
+        val dialogFocusRequester = remember { FocusRequester() }
 
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -142,12 +141,12 @@ fun WatchlistScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp)
-                    .focusRequester(focusRequester),
+                    .focusRequester(dialogFocusRequester),
             )
         }
 
         LaunchedEffect(Unit) {
-            focusRequester.requestFocus()
+            dialogFocusRequester.requestFocus()
         }
     }
 }
