@@ -1,5 +1,7 @@
 package com.stocktracker.presentation
 
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,20 +13,29 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.rotary.onRotaryScrollEvent
 import androidx.compose.ui.unit.dp
 import androidx.wear.compose.material.CircularProgressIndicator
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Text
 import com.stocktracker.model.TimePeriod
+import kotlinx.coroutines.launch
 
 @Composable
 fun StockDetailScreen(
     viewModel: StockDetailViewModel,
     initialStockIndex: Int,
+    onBack: () -> Unit,
 ) {
+    BackHandler { onBack() }
+
     val stocks by viewModel.stocks.collectAsState()
 
     if (stocks.isEmpty()) return
@@ -47,9 +58,26 @@ fun StockDetailScreen(
         viewModel.loadChart(stock.symbol, currentPeriod)
     }
 
+    val focusRequester = remember { FocusRequester() }
+    val coroutineScope = rememberCoroutineScope()
+
     VerticalPager(
         state = pagerState,
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .onRotaryScrollEvent { event ->
+                coroutineScope.launch {
+                    val target = if (event.verticalScrollPixels > 0) {
+                        (pagerState.currentPage + 1).coerceAtMost(periods.size - 1)
+                    } else {
+                        (pagerState.currentPage - 1).coerceAtLeast(0)
+                    }
+                    pagerState.animateScrollToPage(target)
+                }
+                true
+            }
+            .focusRequester(focusRequester)
+            .focusable(),
     ) { periodIndex ->
         val period = periods[periodIndex]
 
@@ -112,5 +140,9 @@ fun StockDetailScreen(
                 modifier = Modifier.padding(bottom = 4.dp),
             )
         }
+    }
+
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
     }
 }
