@@ -1,5 +1,6 @@
 package com.stocktracker.presentation
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -15,7 +16,6 @@ import kotlinx.coroutines.launch
 
 class StockDetailViewModel(
     private val repository: StockRepository,
-    private val apiKey: String,
 ) : ViewModel() {
 
     val stocks: StateFlow<List<Stock>> = repository.watchAll()
@@ -45,10 +45,11 @@ class StockDetailViewModel(
             _isChartLoading.value = true
             _chartError.value = null
             try {
-                val data = repository.getChartData(symbol, period, apiKey)
+                val data = repository.getChartData(symbol, period)
                 chartCache[cacheKey] = data
                 _chartData.value = data
             } catch (e: Exception) {
+                Log.e("StockChart", "Failed to load chart for $symbol $period", e)
                 _chartError.value = "Failed to load chart"
                 _chartData.value = emptyList()
             } finally {
@@ -59,10 +60,9 @@ class StockDetailViewModel(
 
     class Factory(
         private val repository: StockRepository,
-        private val apiKey: String,
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            StockDetailViewModel(repository, apiKey) as T
+            StockDetailViewModel(repository) as T
     }
 }

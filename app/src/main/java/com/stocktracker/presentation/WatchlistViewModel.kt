@@ -14,7 +14,6 @@ import kotlinx.coroutines.launch
 
 class WatchlistViewModel(
     private val repository: StockRepository,
-    private val apiKey: String,
 ) : ViewModel() {
 
     val stocks: StateFlow<List<Stock>> = repository.watchAll()
@@ -30,7 +29,7 @@ class WatchlistViewModel(
         viewModelScope.launch {
             _isLoading.update { true }
             try {
-                repository.addStock(symbol, apiKey)
+                repository.addStock(symbol)
                 _error.update { null }
             } catch (e: Exception) {
                 _error.update { "Failed to add $symbol" }
@@ -50,7 +49,7 @@ class WatchlistViewModel(
         viewModelScope.launch {
             _isLoading.update { true }
             try {
-                repository.refreshAll(apiKey)
+                repository.refreshAll()
                 _error.update { null }
             } catch (e: Exception) {
                 _error.update { "Refresh failed" }
@@ -62,10 +61,9 @@ class WatchlistViewModel(
 
     class Factory(
         private val repository: StockRepository,
-        private val apiKey: String,
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            WatchlistViewModel(repository, apiKey) as T
+            WatchlistViewModel(repository) as T
     }
 }

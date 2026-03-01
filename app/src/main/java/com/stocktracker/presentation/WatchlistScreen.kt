@@ -95,15 +95,17 @@ fun WatchlistScreen(
 @Composable
 private fun StockCard(stock: Stock, onClick: () -> Unit, onLongClick: () -> Unit) {
     Card(
-        onClick = {},
-        modifier = Modifier
-            .fillMaxWidth()
-            .combinedClickable(
-                onClick = onClick,
-                onLongClick = onLongClick,
-            ),
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
     ) {
-        Column {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .combinedClickable(
+                    onClick = onClick,
+                    onLongClick = onLongClick,
+                ),
+        ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
