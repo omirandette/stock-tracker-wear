@@ -156,7 +156,7 @@ private fun StockCard(stock: Stock, onClick: () -> Unit, onLongClick: () -> Unit
     }
 }
 
-private fun formatTimestamp(millis: Long): String {
+internal fun formatTimestamp(millis: Long): String {
     val now = Calendar.getInstance()
     val then = Calendar.getInstance().apply { timeInMillis = millis }
     val isToday = now.get(Calendar.YEAR) == then.get(Calendar.YEAR) &&
