@@ -83,7 +83,10 @@ fun WatchlistScreen(
         item { Spacer(modifier = Modifier.height(4.dp)) }
 
         item {
-            Button(onClick = onAddClick) { Text("+") }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(onClick = onAddClick) { Text("+") }
+                Button(onClick = { viewModel.refresh() }) { Text("\u21BB") }
+            }
         }
     }
 }
