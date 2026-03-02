@@ -4,6 +4,8 @@
 - `./gradlew build` — compile + lint
 - `./gradlew test` — run unit tests (CI)
 - `./gradlew connectedDebugAndroidTest` — Compose UI + Room tests (emulator only, not in CI)
+- `./gradlew :app:recordRoborazziDebug` — record PriceChart snapshot golden images
+- `./gradlew :app:verifyRoborazziDebug` — verify snapshots against golden images (CI)
 - API key: set `alphaVantageKey` in `gradle.properties` (defaults to "demo")
 
 ## Project Structure

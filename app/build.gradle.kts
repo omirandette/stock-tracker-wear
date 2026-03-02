@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.roborazzi)
 }
 
 android {
@@ -45,11 +46,13 @@ android {
 
     testOptions {
         unitTests {
+            isIncludeAndroidResources = true
             isReturnDefaultValues = true
             all {
                 val isLive = gradle.startParameter.taskNames.any { task ->
                     task.contains("testLiveApi", ignoreCase = true)
                 }
+                val isRelease = it.name.contains("Release", ignoreCase = true)
                 it.useJUnit {
                     if (isLive) {
                         includeCategories("com.stocktracker.testutil.LiveApiTest")
@@ -57,9 +60,16 @@ android {
                         excludeCategories("com.stocktracker.testutil.LiveApiTest")
                     }
                 }
+                if (isRelease) {
+                    it.exclude("**/PriceChartSnapshotTest*")
+                }
             }
         }
     }
+}
+
+roborazzi {
+    outputDir.set(file("src/test/snapshots/roborazzi"))
 }
 
 tasks.register("testLiveApi") {
@@ -95,6 +105,12 @@ dependencies {
     testImplementation(libs.coroutines.test)
     testImplementation(libs.turbine)
     testImplementation(libs.okhttp.mockwebserver)
+    testImplementation(libs.roborazzi.core)
+    testImplementation(libs.roborazzi.compose)
+    testImplementation(libs.roborazzi.junit.rule)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.compose.ui.test.junit4)
+    testImplementation(libs.compose.ui.test.manifest)
 
     androidTestImplementation(libs.compose.ui.test.junit4)
     androidTestImplementation(libs.test.runner)
