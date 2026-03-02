@@ -27,7 +27,7 @@ class StockRepository(
                 price = quote.price,
                 change = quote.change,
                 changePercent = quote.changePercent,
-                lastUpdated = System.currentTimeMillis(),
+                lastUpdated = quote.lastUpdated,
             )
         )
     }
@@ -60,5 +60,6 @@ class StockRepository(
         price = price,
         change = change,
         changePercent = changePercent,
+        lastUpdated = lastUpdated,
     )
 }

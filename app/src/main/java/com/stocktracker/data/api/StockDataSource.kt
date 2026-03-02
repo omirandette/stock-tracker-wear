@@ -15,4 +15,5 @@ data class QuoteResult(
     val price: Double,
     val change: Double,
     val changePercent: String,
+    val lastUpdated: Long,
 )
