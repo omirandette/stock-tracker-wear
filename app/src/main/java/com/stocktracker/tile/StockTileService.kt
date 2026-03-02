@@ -14,6 +14,7 @@ import androidx.wear.protolayout.material3.primaryLayout
 import androidx.wear.protolayout.material3.text
 import androidx.wear.protolayout.modifiers.clickable
 import androidx.wear.protolayout.types.LayoutString
+import androidx.wear.tiles.EventBuilders
 import androidx.wear.tiles.RequestBuilders
 import androidx.wear.tiles.TileBuilders.Tile
 import androidx.wear.tiles.TileService
@@ -59,6 +60,10 @@ class StockTileService : TileService() {
             }
         }
         return future
+    }
+
+    override fun onTileEnterEvent(requestParams: EventBuilders.TileEnterEvent) {
+        getUpdater(this).requestUpdate(StockTileService::class.java)
     }
 
     override fun onTileResourcesRequest(
