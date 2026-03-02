@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
 import androidx.wear.compose.foundation.lazy.itemsIndexed
 import androidx.wear.compose.material.Button
@@ -26,6 +27,10 @@ import androidx.wear.compose.material.CircularProgressIndicator
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Text
 import com.stocktracker.model.Stock
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun WatchlistScreen(
@@ -113,10 +118,31 @@ private fun StockCard(stock: Stock, onClick: () -> Unit, onLongClick: () -> Unit
                 Text(text = stock.symbol, style = MaterialTheme.typography.title3)
                 Text(text = "$${String.format("%.2f", stock.price)}")
             }
-            Text(
-                text = "${if (stock.change >= 0) "+" else ""}${String.format("%.2f", stock.change)} (${stock.changePercent})",
-                color = if (stock.change >= 0) Color.Green else Color.Red,
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = "${if (stock.change >= 0) "+" else ""}${String.format("%.2f", stock.change)} (${stock.changePercent})",
+                    color = if (stock.change >= 0) Color.Green else Color.Red,
+                    fontSize = 11.sp,
+                )
+                Text(
+                    text = formatTimestamp(stock.lastUpdated),
+                    color = Color.Gray,
+                    fontSize = 10.sp,
+                )
+            }
         }
     }
+}
+
+private fun formatTimestamp(millis: Long): String {
+    val now = Calendar.getInstance()
+    val then = Calendar.getInstance().apply { timeInMillis = millis }
+    val isToday = now.get(Calendar.YEAR) == then.get(Calendar.YEAR) &&
+        now.get(Calendar.DAY_OF_YEAR) == then.get(Calendar.DAY_OF_YEAR)
+    val pattern = if (isToday) "h:mm a" else "MMM d"
+    return SimpleDateFormat(pattern, Locale.getDefault()).format(Date(millis))
 }

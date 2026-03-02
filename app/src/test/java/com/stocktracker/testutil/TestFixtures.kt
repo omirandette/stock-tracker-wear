@@ -37,7 +37,8 @@ fun quoteResult(
     price: Double = 150.0,
     change: Double = 2.0,
     changePercent: String = "1.35%",
-) = QuoteResult(symbol, price, change, changePercent)
+    lastUpdated: Long = System.currentTimeMillis(),
+) = QuoteResult(symbol, price, change, changePercent, lastUpdated)
 
 fun searchResponse(
     quotes: List<YahooSearchQuote> = listOf(

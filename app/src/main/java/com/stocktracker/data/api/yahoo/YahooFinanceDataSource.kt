@@ -27,11 +27,14 @@ class YahooFinanceDataSource(
         } else {
             0.0
         }
+        val lastTimestamp = result.timestamp?.lastOrNull()?.let { it * 1000 }
+            ?: System.currentTimeMillis()
         return QuoteResult(
             symbol = meta.symbol,
             price = meta.regularMarketPrice,
             change = change,
             changePercent = String.format("%.2f%%", changePct),
+            lastUpdated = lastTimestamp,
         )
     }
 
