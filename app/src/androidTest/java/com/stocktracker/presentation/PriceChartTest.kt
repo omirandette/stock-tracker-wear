@@ -2,8 +2,10 @@ package com.stocktracker.presentation
 
 import androidx.compose.foundation.layout.size
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.unit.dp
 import com.stocktracker.model.ChartPoint
@@ -57,6 +59,7 @@ class PriceChartTest {
             PriceChart(points = points, isPositive = true, modifier = Modifier.size(200.dp))
         }
         // Tests the coerceAtLeast(0.01) division guard — no crash = pass
-        composeRule.onNodeWithText("$150.00").assertIsDisplayed()
+        // Both min and max labels show "$150.00", so assert there are exactly 2
+        composeRule.onAllNodesWithText("$150.00").assertCountEquals(2)
     }
 }
