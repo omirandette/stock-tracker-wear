@@ -15,6 +15,7 @@
   - `data/repository/` — StockRepository (API + Room)
   - `model/` — UI data classes
   - `presentation/` — Compose screens, ViewModel, theme
+  - `tile/` — Wear OS Tile service
   - `MainActivity.kt` — single activity entry point
   - `StockApp.kt` — Application class (manual DI)
 - `gradle/libs.versions.toml` — dependency version catalog
@@ -27,6 +28,14 @@
 ## Shell Commands
 - Do not use arbitrary sleep values — default to `sleep 10` unless a longer wait is justified
 - Do not use arbitrary tail/head values — default to `tail -20` / `head -20` unless more lines are needed
+
+## Testing Conventions
+- Unit tests use JUnit 4 + MockK + `kotlinx-coroutines-test`
+- `MainDispatcherRule` for ViewModel tests (`testutil/MainDispatcherRule.kt`)
+- Backtick test names describing behavior (e.g., `` `loadChart exposes data on success` ``)
+- `runTest` + `advanceUntilIdle()` pattern for coroutine tests
+- Test fixtures in `testutil/TestFixtures.kt` — reuse `chartResponse()`, `quoteResult()`, etc.
+- MockWebServer for integration tests (`integration/` package)
 
 ## Git Workflow
 - Trunk-based development: short-lived feature branches, squash-merge to `main`

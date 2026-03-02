@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Grid lines -->
+    <path
+        android:pathData="M30,36L30,78"
+        android:strokeWidth="0.5"
+        android:strokeColor="#33FFFFFF" />
+    <path
+        android:pathData="M54,36L54,78"
+        android:strokeWidth="0.5"
+        android:strokeColor="#33FFFFFF" />
+    <path
+        android:pathData="M78,36L78,78"
+        android:strokeWidth="0.5"
+        android:strokeColor="#33FFFFFF" />
+    <path
+        android:pathData="M24,48L84,48"
+        android:strokeWidth="0.5"
+        android:strokeColor="#33FFFFFF" />
+    <path
+        android:pathData="M24,60L84,60"
+        android:strokeWidth="0.5"
+        android:strokeColor="#33FFFFFF" />
+    <!-- Upward-trending stock line -->
+    <path
+        android:pathData="M24,72L38,65L48,68L58,55L68,50L78,42L84,36"
+        android:strokeWidth="3"
+        android:strokeColor="#4CAF50"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="#00000000" />
+    <!-- Glow area under the line -->
+    <path
+        android:pathData="M24,72L38,65L48,68L58,55L68,50L78,42L84,36L84,78L24,78Z"
+        android:fillColor="#1A4CAF50" />
+</vector>
