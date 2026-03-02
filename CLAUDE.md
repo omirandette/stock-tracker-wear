@@ -30,4 +30,5 @@
 - Branch protection on `main`: PRs required, CI must pass
 - Do not commit unless explicitly asked
 - Always run tests before creating a PR
+- Each PR and commit should have a single intent/purpose
 - Keep PRs under 200 lines of code; 400 lines max in exceptional cases
