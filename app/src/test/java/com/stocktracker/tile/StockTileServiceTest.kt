@@ -37,8 +37,8 @@ class StockTileServiceTest {
     }
 
     @Test
-    fun `MAX_STOCKS constant is 3`() {
-        assertEquals(3, StockTileService.MAX_STOCKS)
+    fun `MAX_STOCKS constant is 5`() {
+        assertEquals(5, StockTileService.MAX_STOCKS)
     }
 
     @Test

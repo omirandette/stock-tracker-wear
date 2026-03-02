@@ -80,7 +80,7 @@ class StockTileService : TileService() {
     companion object {
         internal const val RESOURCES_VERSION = "1"
         internal const val FRESHNESS_INTERVAL_MS = 300_000L
-        internal const val MAX_STOCKS = 3
+        internal const val MAX_STOCKS = 5
     }
 }
 
@@ -110,7 +110,11 @@ internal fun MaterialScope.buildTileLayout(
                     .setHorizontalAlignment(
                         LayoutElementBuilders.HORIZONTAL_ALIGN_CENTER
                     )
-                for (stock in stocks.take(StockTileService.MAX_STOCKS)) {
+                val sorted = stocks.sortedByDescending {
+                    val base = it.price - it.change
+                    if (base != 0.0) kotlin.math.abs(it.change / base) else 0.0
+                }
+                for (stock in sorted.take(StockTileService.MAX_STOCKS)) {
                     column.addContent(
                         text(
                             LayoutString(formatStockRow(stock)),
