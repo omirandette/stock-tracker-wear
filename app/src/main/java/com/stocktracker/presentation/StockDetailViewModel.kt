@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.stocktracker.data.repository.StockRepository
-import com.stocktracker.model.ChartPoint
+import com.stocktracker.model.ChartData
 import com.stocktracker.model.Stock
 import com.stocktracker.model.TimePeriod
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,10 +21,10 @@ class StockDetailViewModel(
     val stocks: StateFlow<List<Stock>> = repository.watchAll()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    private val chartCache = mutableMapOf<String, List<ChartPoint>>()
+    private val chartCache = mutableMapOf<String, ChartData>()
 
-    private val _chartData = MutableStateFlow<List<ChartPoint>>(emptyList())
-    val chartData: StateFlow<List<ChartPoint>> = _chartData
+    private val _chartData = MutableStateFlow(ChartData(emptyList(), 0.0, 0.0))
+    val chartData: StateFlow<ChartData> = _chartData
 
     private val _isChartLoading = MutableStateFlow(false)
     val isChartLoading: StateFlow<Boolean> = _isChartLoading
@@ -51,7 +51,7 @@ class StockDetailViewModel(
             } catch (e: Exception) {
                 Log.e("StockChart", "Failed to load chart for $symbol $period", e)
                 _chartError.value = "Failed to load chart"
-                _chartData.value = emptyList()
+                _chartData.value = ChartData(emptyList(), 0.0, 0.0)
             } finally {
                 _isChartLoading.value = false
             }

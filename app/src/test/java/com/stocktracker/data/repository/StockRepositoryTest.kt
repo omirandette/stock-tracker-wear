@@ -1,6 +1,7 @@
 package com.stocktracker.data.repository
 
 import com.stocktracker.data.api.StockDataSource
+import com.stocktracker.model.ChartData
 import com.stocktracker.model.ChartPoint
 import com.stocktracker.model.TimePeriod
 import com.stocktracker.testutil.FakeStockDao
@@ -64,7 +65,7 @@ class StockRepositoryTest {
 
     @Test
     fun `getChartData delegates to data source`() = runTest {
-        val expected = listOf(ChartPoint(1000L, 150.0))
+        val expected = ChartData(listOf(ChartPoint(1000L, 150.0)), 2.0, 1.35)
         coEvery { dataSource.getChartData("AAPL", TimePeriod.ONE_DAY) } returns expected
         assertEquals(expected, repo.getChartData("AAPL", TimePeriod.ONE_DAY))
     }

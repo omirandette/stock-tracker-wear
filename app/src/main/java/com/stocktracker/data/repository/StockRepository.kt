@@ -3,7 +3,7 @@ package com.stocktracker.data.repository
 import com.stocktracker.data.api.StockDataSource
 import com.stocktracker.data.local.StockDao
 import com.stocktracker.data.local.StockEntity
-import com.stocktracker.model.ChartPoint
+import com.stocktracker.model.ChartData
 import com.stocktracker.model.SearchResult
 import com.stocktracker.model.Stock
 import com.stocktracker.model.TimePeriod
@@ -47,7 +47,7 @@ class StockRepository(
         dao.delete(symbol)
     }
 
-    suspend fun getChartData(symbol: String, period: TimePeriod): List<ChartPoint> {
+    suspend fun getChartData(symbol: String, period: TimePeriod): ChartData {
         return dataSource.getChartData(symbol, period)
     }
 

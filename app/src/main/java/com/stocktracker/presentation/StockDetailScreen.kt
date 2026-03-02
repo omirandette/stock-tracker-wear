@@ -37,7 +37,7 @@ fun StockDetailScreen(
         pageCount = { periods.size },
     )
 
-    val chartData by viewModel.chartData.collectAsState()
+    val chart by viewModel.chartData.collectAsState()
     val isLoading by viewModel.isChartLoading.collectAsState()
     val chartError by viewModel.chartError.collectAsState()
 
@@ -67,18 +67,15 @@ fun StockDetailScreen(
                 style = MaterialTheme.typography.body1,
             )
 
-            val periodChange = if (periodIndex == pagerState.currentPage && chartData.size >= 2) {
-                val startPrice = chartData.first().price
-                val endPrice = chartData.last().price
-                val change = endPrice - startPrice
-                val changePct = if (startPrice != 0.0) (change / startPrice) * 100 else 0.0
-                Triple(change, changePct, true)
+            val periodChange = if (periodIndex == pagerState.currentPage && chart.points.size >= 2) {
+                Pair(chart.change, chart.changePercent)
             } else {
-                Triple(stock.change, stock.changePercent.removeSuffix("%").toDoubleOrNull() ?: 0.0, false)
+                Pair(stock.change, stock.changePercent.removeSuffix("%").toDoubleOrNull() ?: 0.0)
             }
 
             Text(
-                text = "${if (periodChange.first >= 0) "+" else ""}${String.format("%.2f", periodChange.first)} (${String.format("%.2f", periodChange.second)}%)",
+                text = "${if (periodChange.first >= 0) "+" else ""}${String.format("%.2f", periodChange.first)} " +
+                    "(${String.format("%.2f", periodChange.second)}%)",
                 color = if (periodChange.first >= 0) Color.Green else Color.Red,
                 style = MaterialTheme.typography.caption2,
             )
@@ -98,7 +95,8 @@ fun StockDetailScreen(
                             style = MaterialTheme.typography.caption3,
                         )
                         else -> PriceChart(
-                            points = chartData,
+                            points = chart.points,
+                            isPositive = chart.change >= 0,
                             modifier = Modifier.fillMaxSize().padding(4.dp),
                         )
                     }

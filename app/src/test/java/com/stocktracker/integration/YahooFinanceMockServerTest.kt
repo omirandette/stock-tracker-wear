@@ -56,20 +56,22 @@ class YahooFinanceMockServerTest {
     }
 
     @Test
-    fun `chart JSON maps to ChartPoint list`() = runTest {
+    fun `chart JSON maps to ChartData with points and change`() = runTest {
         server.enqueue(MockResponse().setBody(CHART_JSON))
-        val points = ds.getChartData("AAPL", TimePeriod.FIVE_DAYS)
-        assertEquals(2, points.size)
-        assertEquals(1700000000000L, points[0].timestamp)
-        assertEquals(188.5, points[0].price, 0.01)
+        val data = ds.getChartData("AAPL", TimePeriod.FIVE_DAYS)
+        assertEquals(2, data.points.size)
+        assertEquals(1700000000000L, data.points[0].timestamp)
+        assertEquals(188.5, data.points[0].price, 0.01)
+        assertEquals(189.84 - 187.0, data.change, 0.01)
+        assertEquals(((189.84 - 187.0) / 187.0) * 100, data.changePercent, 0.01)
     }
 
     @Test
     fun `null close values in JSON are filtered out`() = runTest {
         server.enqueue(MockResponse().setBody(CHART_NULL_CLOSE_JSON))
-        val points = ds.getChartData("AAPL", TimePeriod.FIVE_DAYS)
-        assertEquals(1, points.size)
-        assertEquals(188.5, points[0].price, 0.01)
+        val data = ds.getChartData("AAPL", TimePeriod.FIVE_DAYS)
+        assertEquals(1, data.points.size)
+        assertEquals(188.5, data.points[0].price, 0.01)
     }
 
     @Test(expected = Exception::class)
@@ -119,7 +121,7 @@ private val CHART_JSON = """
 {
   "chart": {
     "result": [{
-      "meta": { "symbol": "AAPL", "regularMarketPrice": 189.84, "previousClose": 188.5 },
+      "meta": { "symbol": "AAPL", "regularMarketPrice": 189.84, "previousClose": 188.5, "chartPreviousClose": 187.0 },
       "timestamp": [1700000000, 1700086400],
       "indicators": { "quote": [{ "close": [188.5, 189.84] }] }
     }],
@@ -132,7 +134,7 @@ private val CHART_NULL_CLOSE_JSON = """
 {
   "chart": {
     "result": [{
-      "meta": { "symbol": "AAPL", "regularMarketPrice": 189.84, "previousClose": 188.5 },
+      "meta": { "symbol": "AAPL", "regularMarketPrice": 189.84, "previousClose": 188.5, "chartPreviousClose": 187.0 },
       "timestamp": [1700000000, 1700086400],
       "indicators": { "quote": [{ "close": [188.5, null] }] }
     }],

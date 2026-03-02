@@ -1,12 +1,12 @@
 package com.stocktracker.data.api
 
-import com.stocktracker.model.ChartPoint
+import com.stocktracker.model.ChartData
 import com.stocktracker.model.SearchResult
 import com.stocktracker.model.TimePeriod
 
 interface StockDataSource {
     suspend fun getQuote(symbol: String): QuoteResult
-    suspend fun getChartData(symbol: String, period: TimePeriod): List<ChartPoint>
+    suspend fun getChartData(symbol: String, period: TimePeriod): ChartData
     suspend fun searchStocks(query: String): List<SearchResult>
 }
 

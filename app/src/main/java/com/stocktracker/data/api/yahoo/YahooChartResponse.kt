@@ -19,6 +19,7 @@ data class ChartMeta(
     val symbol: String,
     val regularMarketPrice: Double,
     val previousClose: Double,
+    val chartPreviousClose: Double?,
 )
 
 data class Indicators(

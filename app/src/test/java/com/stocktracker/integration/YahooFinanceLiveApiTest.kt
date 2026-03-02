@@ -50,8 +50,8 @@ class YahooFinanceLiveApiTest {
 
     @Test
     fun `getChartData returns non-empty list`() = runTest {
-        val points = ds.getChartData("AAPL", TimePeriod.FIVE_DAYS)
-        assertTrue("Expected chart points, got ${points.size}", points.isNotEmpty())
+        val data = ds.getChartData("AAPL", TimePeriod.FIVE_DAYS)
+        assertTrue("Expected chart points, got ${data.points.size}", data.points.isNotEmpty())
     }
 
     @Test(expected = Exception::class)
