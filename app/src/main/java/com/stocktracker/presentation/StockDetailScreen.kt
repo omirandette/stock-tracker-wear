@@ -1,5 +1,6 @@
 package com.stocktracker.presentation
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -124,7 +125,16 @@ fun StockDetailScreen(
                         else -> PriceChart(
                             points = chart.points,
                             isPositive = chart.change >= 0,
-                            modifier = Modifier.fillMaxSize().padding(4.dp),
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(4.dp)
+                                .clickable {
+                                    viewModel.loadChart(
+                                        stock.symbol,
+                                        currentPeriod,
+                                        forceRefresh = true,
+                                    )
+                                },
                         )
                     }
                 }

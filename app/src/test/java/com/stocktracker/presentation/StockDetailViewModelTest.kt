@@ -24,7 +24,8 @@ class StockDetailViewModelTest {
     @get:Rule val dispatcherRule = MainDispatcherRule()
 
     private val repository = mockk<StockRepository>(relaxed = true)
-    private val vm by lazy { StockDetailViewModel(repository) }
+    private var fakeTime = 1_000_000L
+    private val vm by lazy { StockDetailViewModel(repository, clock = { fakeTime }) }
 
     private val points = listOf(ChartPoint(1000L, 150.0), ChartPoint(2000L, 155.0))
     private val chartData = ChartData(points, 2.0, 1.35)
@@ -40,7 +41,7 @@ class StockDetailViewModelTest {
     }
 
     @Test
-    fun `loadChart uses cache on second call`() = runTest {
+    fun `loadChart uses cache within TTL`() = runTest {
         coEvery { repository.getChartData("AAPL", TimePeriod.ONE_DAY) } returns chartData
         vm.loadChart("AAPL", TimePeriod.ONE_DAY)
         advanceUntilIdle()
@@ -58,6 +59,33 @@ class StockDetailViewModelTest {
         advanceUntilIdle()
         coVerify(exactly = 1) { repository.getChartData("AAPL", TimePeriod.ONE_DAY) }
         coVerify(exactly = 1) { repository.getChartData("AAPL", TimePeriod.FIVE_DAYS) }
+    }
+
+    @Test
+    fun `loadChart with forceRefresh bypasses cache`() = runTest {
+        coEvery { repository.getChartData("AAPL", TimePeriod.ONE_DAY) } returns chartData
+        vm.loadChart("AAPL", TimePeriod.ONE_DAY)
+        advanceUntilIdle()
+        vm.loadChart("AAPL", TimePeriod.ONE_DAY, forceRefresh = true)
+        advanceUntilIdle()
+        coVerify(exactly = 2) { repository.getChartData("AAPL", TimePeriod.ONE_DAY) }
+    }
+
+    @Test
+    fun `loadChart re-fetches after TTL expires`() = runTest {
+        val staleData = ChartData(points, 2.0, 1.35)
+        val freshData = ChartData(points, -3.0, -1.80)
+        coEvery { repository.getChartData("AAPL", TimePeriod.ONE_DAY) } returns staleData
+        vm.loadChart("AAPL", TimePeriod.ONE_DAY)
+        advanceUntilIdle()
+        assertEquals(staleData, vm.chartData.value)
+
+        fakeTime += StockDetailViewModel.CACHE_TTL_MS
+        coEvery { repository.getChartData("AAPL", TimePeriod.ONE_DAY) } returns freshData
+        vm.loadChart("AAPL", TimePeriod.ONE_DAY)
+        advanceUntilIdle()
+        coVerify(exactly = 2) { repository.getChartData("AAPL", TimePeriod.ONE_DAY) }
+        assertEquals(freshData, vm.chartData.value)
     }
 
     @Test
@@ -80,5 +108,10 @@ class StockDetailViewModelTest {
         advanceUntilIdle()
         assertNull(vm.chartError.value)
         assertEquals(chartData, vm.chartData.value)
+    }
+
+    @Test
+    fun `CACHE_TTL_MS is 5 minutes`() {
+        assertEquals(300_000L, StockDetailViewModel.CACHE_TTL_MS)
     }
 }
