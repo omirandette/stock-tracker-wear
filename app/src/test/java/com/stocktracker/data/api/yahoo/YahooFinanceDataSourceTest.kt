@@ -2,6 +2,7 @@ package com.stocktracker.data.api.yahoo
 
 import com.stocktracker.model.TimePeriod
 import com.stocktracker.testutil.chartResponse
+import com.stocktracker.testutil.searchResponse
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
@@ -12,7 +13,8 @@ import org.junit.Test
 class YahooFinanceDataSourceTest {
 
     private val api = mockk<YahooChartApi>()
-    private val ds = YahooFinanceDataSource(api)
+    private val searchApi = mockk<YahooSearchApi>()
+    private val ds = YahooFinanceDataSource(api, searchApi)
 
     @Test
     fun `getQuote maps price change and changePercent`() = runTest {
@@ -74,5 +76,68 @@ class YahooFinanceDataSourceTest {
         )
         coEvery { api.getChart("AAPL", "1d", "5m") } returns response
         assertTrue(ds.getChartData("AAPL", TimePeriod.ONE_DAY).isEmpty())
+    }
+
+    @Test
+    fun `searchStocks returns mapped results`() = runTest {
+        coEvery { searchApi.search("apple") } returns searchResponse()
+        val results = ds.searchStocks("apple")
+        assertEquals(2, results.size)
+        assertEquals("AAPL", results[0].symbol)
+        assertEquals("Apple Inc.", results[0].name)
+        assertEquals("NASDAQ", results[0].exchange)
+    }
+
+    @Test
+    fun `searchStocks filters out non-equity types`() = runTest {
+        coEvery { searchApi.search("apple") } returns searchResponse(
+            quotes = listOf(
+                YahooSearchQuote("AAPL", "Apple Inc.", null, "NASDAQ", "EQUITY"),
+                YahooSearchQuote("AAPL240119C00100000", "AAPL Option", null, "OPR", "OPTION"),
+                YahooSearchQuote("SPY", "SPDR S&P 500", null, "NYSE", "ETF"),
+            )
+        )
+        val results = ds.searchStocks("apple")
+        assertEquals(2, results.size)
+        assertEquals("AAPL", results[0].symbol)
+        assertEquals("SPY", results[1].symbol)
+    }
+
+    @Test
+    fun `searchStocks caps at 5 results`() = runTest {
+        val quotes = (1..8).map {
+            YahooSearchQuote("SYM$it", "Stock $it", null, "NYSE", "EQUITY")
+        }
+        coEvery { searchApi.search("stock") } returns searchResponse(quotes = quotes)
+        val results = ds.searchStocks("stock")
+        assertEquals(5, results.size)
+    }
+
+    @Test
+    fun `searchStocks returns empty on empty response`() = runTest {
+        coEvery { searchApi.search("xyz") } returns searchResponse(quotes = emptyList())
+        assertTrue(ds.searchStocks("xyz").isEmpty())
+    }
+
+    @Test
+    fun `searchStocks uses longname over shortname`() = runTest {
+        coEvery { searchApi.search("apple") } returns searchResponse(
+            quotes = listOf(
+                YahooSearchQuote("AAPL", "Apple", "Apple Inc.", "NASDAQ", "EQUITY"),
+            )
+        )
+        val results = ds.searchStocks("apple")
+        assertEquals("Apple Inc.", results[0].name)
+    }
+
+    @Test
+    fun `searchStocks falls back to shortname when longname is null`() = runTest {
+        coEvery { searchApi.search("apple") } returns searchResponse(
+            quotes = listOf(
+                YahooSearchQuote("AAPL", "Apple", null, "NASDAQ", "EQUITY"),
+            )
+        )
+        val results = ds.searchStocks("apple")
+        assertEquals("Apple", results[0].name)
     }
 }
