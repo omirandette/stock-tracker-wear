@@ -99,7 +99,16 @@ fun WatchlistScreen(
         item {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(onClick = onAddClick) { Text("+") }
-                Button(onClick = { viewModel.refresh() }) { Text("\u21BB") }
+                Button(
+                    onClick = { viewModel.refresh() },
+                    enabled = !isLoading,
+                ) {
+                    if (isLoading) {
+                        CircularProgressIndicator()
+                    } else {
+                        Text("\u21BB")
+                    }
+                }
             }
         }
     }
