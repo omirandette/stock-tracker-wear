@@ -22,6 +22,7 @@ import com.stocktracker.model.ChartPoint
 @Composable
 fun PriceChart(
     points: List<ChartPoint>,
+    isPositive: Boolean,
     modifier: Modifier = Modifier,
 ) {
     if (points.size < 2) {
@@ -34,7 +35,7 @@ fun PriceChart(
     val minPrice = points.minOf { it.price }
     val maxPrice = points.maxOf { it.price }
     val priceRange = (maxPrice - minPrice).coerceAtLeast(0.01)
-    val chartColor = if (points.last().price >= points.first().price) Color.Green else Color.Red
+    val chartColor = if (isPositive) Color.Green else Color.Red
 
     Column(modifier = modifier) {
         Text(

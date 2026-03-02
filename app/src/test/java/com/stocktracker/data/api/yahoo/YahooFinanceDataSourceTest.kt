@@ -53,29 +53,47 @@ class YahooFinanceDataSourceTest {
     fun `getChartData multiplies timestamps by 1000 and filters nulls`() = runTest {
         coEvery { api.getChart("AAPL", "5d", "15m") } returns
             chartResponse(timestamps = listOf(100L, 200L, 300L), closes = listOf(10.0, null, 12.0))
-        val points = ds.getChartData("AAPL", TimePeriod.FIVE_DAYS)
-        assertEquals(2, points.size)
-        assertEquals(100_000L, points[0].timestamp)
-        assertEquals(300_000L, points[1].timestamp)
+        val data = ds.getChartData("AAPL", TimePeriod.FIVE_DAYS)
+        assertEquals(2, data.points.size)
+        assertEquals(100_000L, data.points[0].timestamp)
+        assertEquals(300_000L, data.points[1].timestamp)
+    }
+
+    @Test
+    fun `getChartData computes change from chartPreviousClose`() = runTest {
+        coEvery { api.getChart("AAPL", "5d", "15m") } returns
+            chartResponse(price = 150.0, previousClose = 148.0, chartPreviousClose = 145.0)
+        val data = ds.getChartData("AAPL", TimePeriod.FIVE_DAYS)
+        assertEquals(5.0, data.change, 0.001)
+        assertEquals((5.0 / 145.0) * 100, data.changePercent, 0.001)
+    }
+
+    @Test
+    fun `getChartData falls back to previousClose when chartPreviousClose is null`() = runTest {
+        coEvery { api.getChart("AAPL", "5d", "15m") } returns
+            chartResponse(price = 150.0, previousClose = 148.0, chartPreviousClose = null)
+        val data = ds.getChartData("AAPL", TimePeriod.FIVE_DAYS)
+        assertEquals(2.0, data.change, 0.001)
+        assertEquals((2.0 / 148.0) * 100, data.changePercent, 0.001)
     }
 
     @Test
     fun `getChartData returns empty on null timestamps`() = runTest {
         coEvery { api.getChart("AAPL", "1d", "5m") } returns
             chartResponse(timestamps = null)
-        assertTrue(ds.getChartData("AAPL", TimePeriod.ONE_DAY).isEmpty())
+        assertTrue(ds.getChartData("AAPL", TimePeriod.ONE_DAY).points.isEmpty())
     }
 
     @Test
     fun `getChartData returns empty on null indicators`() = runTest {
         val response = YahooChartResponse(
             ChartBody(
-                listOf(ChartResult(ChartMeta("AAPL", 150.0, 148.0), listOf(1L), null)),
+                listOf(ChartResult(ChartMeta("AAPL", 150.0, 148.0, null), listOf(1L), null)),
                 null,
             )
         )
         coEvery { api.getChart("AAPL", "1d", "5m") } returns response
-        assertTrue(ds.getChartData("AAPL", TimePeriod.ONE_DAY).isEmpty())
+        assertTrue(ds.getChartData("AAPL", TimePeriod.ONE_DAY).points.isEmpty())
     }
 
     @Test

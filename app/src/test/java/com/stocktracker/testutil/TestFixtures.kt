@@ -15,6 +15,7 @@ fun chartResponse(
     symbol: String = "AAPL",
     price: Double = 150.0,
     previousClose: Double = 148.0,
+    chartPreviousClose: Double? = null,
     timestamps: List<Long>? = listOf(1000L, 2000L),
     closes: List<Double?>? = listOf(149.0, 150.0),
     error: ChartError? = null,
@@ -22,7 +23,7 @@ fun chartResponse(
     chart = ChartBody(
         result = if (error != null) null else listOf(
             ChartResult(
-                meta = ChartMeta(symbol, price, previousClose),
+                meta = ChartMeta(symbol, price, previousClose, chartPreviousClose),
                 timestamp = timestamps,
                 indicators = Indicators(listOf(QuoteIndicator(closes))),
             )

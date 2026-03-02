@@ -1,6 +1,7 @@
 package com.stocktracker.presentation
 
 import com.stocktracker.data.repository.StockRepository
+import com.stocktracker.model.ChartData
 import com.stocktracker.model.ChartPoint
 import com.stocktracker.model.TimePeriod
 import com.stocktracker.testutil.MainDispatcherRule
@@ -26,20 +27,21 @@ class StockDetailViewModelTest {
     private val vm by lazy { StockDetailViewModel(repository) }
 
     private val points = listOf(ChartPoint(1000L, 150.0), ChartPoint(2000L, 155.0))
+    private val chartData = ChartData(points, 2.0, 1.35)
 
     @Test
     fun `loadChart exposes data on success`() = runTest {
-        coEvery { repository.getChartData("AAPL", TimePeriod.ONE_DAY) } returns points
+        coEvery { repository.getChartData("AAPL", TimePeriod.ONE_DAY) } returns chartData
         vm.loadChart("AAPL", TimePeriod.ONE_DAY)
         advanceUntilIdle()
-        assertEquals(points, vm.chartData.value)
+        assertEquals(chartData, vm.chartData.value)
         assertFalse(vm.isChartLoading.value)
         assertNull(vm.chartError.value)
     }
 
     @Test
     fun `loadChart uses cache on second call`() = runTest {
-        coEvery { repository.getChartData("AAPL", TimePeriod.ONE_DAY) } returns points
+        coEvery { repository.getChartData("AAPL", TimePeriod.ONE_DAY) } returns chartData
         vm.loadChart("AAPL", TimePeriod.ONE_DAY)
         advanceUntilIdle()
         vm.loadChart("AAPL", TimePeriod.ONE_DAY)
@@ -49,7 +51,7 @@ class StockDetailViewModelTest {
 
     @Test
     fun `loadChart does not share cache across periods`() = runTest {
-        coEvery { repository.getChartData("AAPL", any()) } returns points
+        coEvery { repository.getChartData("AAPL", any()) } returns chartData
         vm.loadChart("AAPL", TimePeriod.ONE_DAY)
         advanceUntilIdle()
         vm.loadChart("AAPL", TimePeriod.FIVE_DAYS)
@@ -64,7 +66,7 @@ class StockDetailViewModelTest {
         vm.loadChart("AAPL", TimePeriod.ONE_DAY)
         advanceUntilIdle()
         assertEquals("Failed to load chart", vm.chartError.value)
-        assertTrue(vm.chartData.value.isEmpty())
+        assertTrue(vm.chartData.value.points.isEmpty())
     }
 
     @Test
@@ -73,10 +75,10 @@ class StockDetailViewModelTest {
         vm.loadChart("AAPL", TimePeriod.ONE_DAY)
         advanceUntilIdle()
 
-        coEvery { repository.getChartData("AAPL", TimePeriod.FIVE_DAYS) } returns points
+        coEvery { repository.getChartData("AAPL", TimePeriod.FIVE_DAYS) } returns chartData
         vm.loadChart("AAPL", TimePeriod.FIVE_DAYS)
         advanceUntilIdle()
         assertNull(vm.chartError.value)
-        assertEquals(points, vm.chartData.value)
+        assertEquals(chartData, vm.chartData.value)
     }
 }
