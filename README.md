@@ -9,6 +9,7 @@ A Wear OS app to track stock prices on your wrist. Manage a watchlist, view inte
 - **Price charts** — swipe or use the rotary crown to browse 9 time periods (1D, 5D, 1M, 3M, 6M, 12M, 5Y, YTD, MAX)
 - **Auto-refresh** — stale data is refreshed automatically in the background
 - **Long-press to remove** — long-press a stock card to delete it from your watchlist
+- **Cloud backup** — watchlist is backed up via Android Auto Backup and restored on reinstall (Wear OS 4+)
 
 ## Setup
 
