@@ -107,6 +107,17 @@ class WatchlistViewModel(
         }
     }
 
+    fun refreshIfStale() {
+        val oldest = stocks.value.minOfOrNull { it.lastUpdated } ?: return
+        if (System.currentTimeMillis() - oldest > STALE_THRESHOLD_MS) {
+            refresh()
+        }
+    }
+
+    companion object {
+        const val STALE_THRESHOLD_MS = 5 * 60 * 1000L
+    }
+
     class Factory(
         private val repository: StockRepository,
     ) : ViewModelProvider.Factory {
