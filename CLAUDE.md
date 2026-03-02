@@ -3,7 +3,7 @@
 ## Build & Test
 - `./gradlew build` — compile + lint
 - `./gradlew test` — run unit tests (CI)
-- `./gradlew connectedDebugAndroidTest` — Compose UI + Room tests (emulator only, not in CI)
+- `ANDROID_SERIAL=emulator-5554 ./gradlew connectedDebugAndroidTest` — Compose UI + Room tests (emulator only, not physical watch, not in CI)
 - `./gradlew :app:recordRoborazziDebug` — record PriceChart snapshot golden images
 - `./gradlew :app:verifyRoborazziDebug` — verify snapshots against golden images (CI)
 - API key: set `alphaVantageKey` in `gradle.properties` (defaults to "demo")
@@ -32,6 +32,7 @@
 - Trunk-based development: short-lived feature branches, squash-merge to `main`
 - Branch protection on `main`: PRs required, CI must pass
 - Do not commit unless explicitly asked
+- Before creating a commit, run ALL local tests: `./gradlew test`, `./gradlew :app:verifyRoborazziDebug`, AND `ANDROID_SERIAL=emulator-5554 ./gradlew connectedDebugAndroidTest`
 - Always run tests before creating a PR
 - Each PR and commit should have a single intent/purpose
 - Keep PRs under 200 lines of code; 400 lines max in exceptional cases

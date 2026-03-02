@@ -111,6 +111,11 @@ fun AddStockScreen(
     }
 
     LaunchedEffect(Unit) {
-        focusRequester.requestFocus()
+        try {
+            focusRequester.requestFocus()
+        } catch (_: IllegalStateException) {
+            // FocusRequester may not yet be connected to a node in tests or
+            // when the ScalingLazyColumn hasn't composed the text field item.
+        }
     }
 }

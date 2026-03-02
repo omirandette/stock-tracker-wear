@@ -25,7 +25,7 @@ class StockDetailScreenTest {
         dao.seed(StockEntity("AAPL", 150.0, 2.0, "1.35%", System.currentTimeMillis()))
         dataSource.chartHandler = { _, _ ->
             ChartData(
-                listOf(ChartPoint(1000L, 148.0), ChartPoint(2000L, 150.0)),
+                listOf(ChartPoint(1000L, 145.0), ChartPoint(2000L, 152.0)),
                 2.0, 1.35,
             )
         }

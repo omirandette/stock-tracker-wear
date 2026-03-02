@@ -1,11 +1,15 @@
 package com.stocktracker.presentation
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.focusTarget
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performTextInput
-import com.stocktracker.data.local.StockEntity
 import com.stocktracker.data.repository.StockRepository
 import com.stocktracker.model.SearchResult
 import com.stocktracker.testutil.ConfigurableFakeDataSource
@@ -24,6 +28,13 @@ class AddStockScreenTest {
     private val dataSource = ConfigurableFakeDataSource()
     private val repository = StockRepository(dataSource, dao)
 
+    /** Wraps content in a focusable parent so FocusRequester.requestFocus() works in tests. */
+    private fun setContentWithFocus(content: @Composable () -> Unit) {
+        composeRule.setContent {
+            Box(modifier = Modifier.focusTarget()) { content() }
+        }
+    }
+
     @Test
     fun searchPlaceholder_isDisplayedWhenEmpty() {
         setScreen()
@@ -34,7 +45,7 @@ class AddStockScreenTest {
     fun searchResults_displaySymbolAndName() {
         dataSource.searchHandler = { listOf(SearchResult("AAPL", "Apple Inc.", "NASDAQ")) }
         val vm = WatchlistViewModel(repository)
-        composeRule.setContent { AddStockScreen(viewModel = vm, onBack = {}) }
+        setContentWithFocus { AddStockScreen(viewModel = vm, onBack = {}) }
 
         vm.onSearchQueryChange("AP")
         composeRule.waitUntil(3000) {
@@ -52,7 +63,8 @@ class AddStockScreenTest {
         var backCalled = false
         val vm = WatchlistViewModel(repository)
 
-        composeRule.setContent { AddStockScreen(viewModel = vm, onBack = { backCalled = true }) }
+        composeRule.mainClock.autoAdvance = true
+        setContentWithFocus { AddStockScreen(viewModel = vm, onBack = { backCalled = true }) }
 
         vm.onSearchQueryChange("AP")
         composeRule.waitUntil(3000) {
@@ -72,7 +84,7 @@ class AddStockScreenTest {
     fun noResults_showsNoResultsText() {
         dataSource.searchHandler = { emptyList() }
         val vm = WatchlistViewModel(repository)
-        composeRule.setContent { AddStockScreen(viewModel = vm, onBack = {}) }
+        setContentWithFocus { AddStockScreen(viewModel = vm, onBack = {}) }
 
         vm.onSearchQueryChange("XX")
         composeRule.waitUntil(3000) {
@@ -85,6 +97,6 @@ class AddStockScreenTest {
 
     private fun setScreen(onBack: () -> Unit = {}) {
         val vm = WatchlistViewModel(repository)
-        composeRule.setContent { AddStockScreen(viewModel = vm, onBack = onBack) }
+        setContentWithFocus { AddStockScreen(viewModel = vm, onBack = onBack) }
     }
 }
