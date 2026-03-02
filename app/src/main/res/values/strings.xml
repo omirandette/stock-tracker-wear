@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Stock Tracker</string>
+    <string name="tile_label">Stock Watchlist</string>
+    <string name="tile_description">Shows your top stocks at a glance</string>
 </resources>

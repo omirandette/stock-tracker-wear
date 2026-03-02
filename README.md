@@ -10,6 +10,7 @@ A Wear OS app to track stock prices on your wrist. Manage a watchlist, view inte
 - **Auto-refresh** — stale data is refreshed automatically in the background
 - **Long-press to remove** — long-press a stock card to delete it from your watchlist
 - **Cloud backup** — watchlist is backed up via Android Auto Backup and restored on reinstall (Wear OS 4+)
+- **Tile** — swipe from the watch face to glance at your top 3 stocks without opening the app; tap to launch
 
 ## Setup
 
@@ -48,6 +49,7 @@ app/src/main/java/com/stocktracker/
 ├── data/repository/   # StockRepository (API + Room)
 ├── model/             # UI data classes (Stock, ChartPoint, TimePeriod, etc.)
 ├── presentation/      # Compose screens, ViewModels, PriceChart, theme
+├── tile/              # Wear OS Tile service
 ├── MainActivity.kt    # Single activity entry point
 └── StockApp.kt        # Application class (manual DI)
 ```

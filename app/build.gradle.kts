@@ -8,7 +8,7 @@ plugins {
 
 android {
     namespace = "com.stocktracker"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.stocktracker"
@@ -99,6 +99,12 @@ dependencies {
     implementation(libs.okhttp.logging)
 
     implementation(libs.coroutines.android)
+
+    implementation(libs.wear.tiles)
+    implementation(libs.protolayout)
+    implementation(libs.protolayout.material3)
+    implementation(libs.protolayout.expression)
+    implementation(libs.guava)
 
     testImplementation(libs.junit)
     testImplementation(libs.mockk)
