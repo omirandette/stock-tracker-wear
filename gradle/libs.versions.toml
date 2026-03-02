@@ -12,6 +12,8 @@ compose-ui = "1.7.5"
 junit = "4.13.2"
 mockk = "1.13.13"
 turbine = "1.2.0"
+roborazzi = "1.59.0"
+robolectric = "4.16.1"
 
 [libraries]
 wear-compose-material = { module = "androidx.wear.compose:compose-material", version.ref = "wear-compose" }
@@ -41,9 +43,14 @@ compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest", ve
 room-testing = { module = "androidx.room:room-testing", version.ref = "room" }
 test-runner = { module = "androidx.test:runner", version = "1.6.2" }
 test-rules = { module = "androidx.test:rules", version = "1.6.1" }
+roborazzi-core = { module = "io.github.takahirom.roborazzi:roborazzi", version.ref = "roborazzi" }
+roborazzi-compose = { module = "io.github.takahirom.roborazzi:roborazzi-compose", version.ref = "roborazzi" }
+roborazzi-junit-rule = { module = "io.github.takahirom.roborazzi:roborazzi-junit-rule", version.ref = "roborazzi" }
+robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+roborazzi = { id = "io.github.takahirom.roborazzi", version.ref = "roborazzi" }
