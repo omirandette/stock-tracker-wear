@@ -35,3 +35,4 @@
 - Always run tests before creating a PR
 - Each PR and commit should have a single intent/purpose
 - Keep PRs under 200 lines of code; 400 lines max in exceptional cases
+- Keep `README.md` up to date — if a PR changes features, commands, setup, or project structure, update the README in the same PR
