@@ -16,12 +16,15 @@ import kotlinx.coroutines.launch
 
 class StockDetailViewModel(
     private val repository: StockRepository,
+    private val clock: () -> Long = System::currentTimeMillis,
 ) : ViewModel() {
 
     val stocks: StateFlow<List<Stock>> = repository.watchAll()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    private val chartCache = mutableMapOf<String, ChartData>()
+    private data class CacheEntry(val data: ChartData, val timestamp: Long)
+
+    private val chartCache = mutableMapOf<String, CacheEntry>()
 
     private val _chartData = MutableStateFlow(ChartData(emptyList(), 0.0, 0.0))
     val chartData: StateFlow<ChartData> = _chartData
@@ -32,13 +35,15 @@ class StockDetailViewModel(
     private val _chartError = MutableStateFlow<String?>(null)
     val chartError: StateFlow<String?> = _chartError
 
-    fun loadChart(symbol: String, period: TimePeriod) {
+    fun loadChart(symbol: String, period: TimePeriod, forceRefresh: Boolean = false) {
         val cacheKey = "$symbol-${period.name}"
-        val cached = chartCache[cacheKey]
-        if (cached != null) {
-            _chartData.value = cached
-            _chartError.value = null
-            return
+        if (!forceRefresh) {
+            val cached = chartCache[cacheKey]
+            if (cached != null && !isStale(cached.timestamp)) {
+                _chartData.value = cached.data
+                _chartError.value = null
+                return
+            }
         }
 
         viewModelScope.launch {
@@ -46,7 +51,7 @@ class StockDetailViewModel(
             _chartError.value = null
             try {
                 val data = repository.getChartData(symbol, period)
-                chartCache[cacheKey] = data
+                chartCache[cacheKey] = CacheEntry(data, clock())
                 _chartData.value = data
             } catch (e: Exception) {
                 Log.e("StockChart", "Failed to load chart for $symbol $period", e)
@@ -58,11 +63,18 @@ class StockDetailViewModel(
         }
     }
 
+    private fun isStale(timestamp: Long): Boolean =
+        clock() - timestamp >= CACHE_TTL_MS
+
     class Factory(
         private val repository: StockRepository,
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
             StockDetailViewModel(repository) as T
+    }
+
+    companion object {
+        internal const val CACHE_TTL_MS = 300_000L // 5 minutes
     }
 }
