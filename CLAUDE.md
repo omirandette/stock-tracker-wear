@@ -2,7 +2,8 @@
 
 ## Build & Test
 - `./gradlew build` — compile + lint
-- `./gradlew test` — run unit tests
+- `./gradlew test` — run unit tests (CI)
+- `./gradlew connectedDebugAndroidTest` — Compose UI + Room tests (emulator only, not in CI)
 - API key: set `alphaVantageKey` in `gradle.properties` (defaults to "demo")
 
 ## Project Structure
