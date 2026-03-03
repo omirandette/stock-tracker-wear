@@ -13,6 +13,7 @@ import androidx.wear.protolayout.material3.materialScope
 import androidx.wear.protolayout.material3.primaryLayout
 import androidx.wear.protolayout.material3.text
 import androidx.wear.protolayout.modifiers.clickable
+import androidx.wear.protolayout.types.LayoutColor
 import androidx.wear.protolayout.types.LayoutString
 import androidx.wear.tiles.EventBuilders
 import androidx.wear.tiles.RequestBuilders
@@ -84,6 +85,9 @@ class StockTileService : TileService() {
     }
 }
 
+private val COLOR_GREEN = LayoutColor(0xFF4CAF50.toInt())
+private val COLOR_RED = LayoutColor(0xFFF44336.toInt())
+
 internal fun MaterialScope.buildTileLayout(
     stocks: List<Stock>,
 ): LayoutElementBuilders.LayoutElement {
@@ -115,10 +119,12 @@ internal fun MaterialScope.buildTileLayout(
                     if (base != 0.0) kotlin.math.abs(it.change / base) else 0.0
                 }
                 for (stock in sorted.take(StockTileService.MAX_STOCKS)) {
+                    val color = if (stock.change >= 0) COLOR_GREEN else COLOR_RED
                     column.addContent(
                         text(
                             LayoutString(formatStockRow(stock)),
                             typography = Typography.BODY_SMALL,
+                            color = color,
                             maxLines = 1,
                         )
                     )
