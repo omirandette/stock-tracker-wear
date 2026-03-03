@@ -51,6 +51,7 @@ roborazzi-compose = { module = "io.github.takahirom.roborazzi:roborazzi-compose"
 roborazzi-junit-rule = { module = "io.github.takahirom.roborazzi:roborazzi-junit-rule", version.ref = "roborazzi" }
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
 wear-tiles = { module = "androidx.wear.tiles:tiles", version.ref = "tiles" }
+wear-tiles-testing = { module = "androidx.wear.tiles:tiles-testing", version.ref = "tiles" }
 protolayout = { module = "androidx.wear.protolayout:protolayout", version.ref = "protolayout" }
 protolayout-material3 = { module = "androidx.wear.protolayout:protolayout-material3", version.ref = "protolayout" }
 protolayout-expression = { module = "androidx.wear.protolayout:protolayout-expression", version.ref = "protolayout" }

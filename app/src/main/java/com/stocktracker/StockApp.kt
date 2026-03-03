@@ -12,10 +12,10 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-class StockApp : Application() {
+open class StockApp : Application() {
 
     lateinit var repository: StockRepository
-        private set
+        internal set
 
     override fun onCreate() {
         super.onCreate()
