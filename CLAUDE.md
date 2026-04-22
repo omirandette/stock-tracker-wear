@@ -24,6 +24,10 @@ Multi-module Gradle project:
   - `tile/` — Wear OS Tile service
   - `MainActivity.kt`, `StockApp.kt` — launcher + Application
   - `testutil/MainDispatcherRule.kt` — watch-local copy (duplicated from `:shared` because AGP testFixtures didn't resolve cleanly)
+- `:phone` (`phone/`) — android-application, `applicationId = com.stocktracker.phone`, package `com.stocktracker.phone.*`. Coexists with the watch install.
+  - `ui/` — Material 3 Compose screens + ViewModels + theme. List-detail layout via `NavigableListDetailPaneScaffold` (material3-adaptive-navigation), fold-aware automatically.
+  - `MainPhoneActivity.kt`, `StockPhoneApp.kt` — launcher + Application; DI via shared `RepositoryFactory`.
+  - `testutil/MainDispatcherRule.kt` — phone-local copy, same reason as watch.
 - `gradle/libs.versions.toml` — dependency version catalog
 
 ## Code Style

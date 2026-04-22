@@ -9,6 +9,10 @@
       "Bash(./gradlew :shared:verifyRoborazziDebug)",
       "Bash(./gradlew :watch:installDebug)",
       "Bash(./gradlew :watch:connectedDebugAndroidTest)",
+      "Bash(./gradlew :phone:testDebugUnitTest *)",
+      "Bash(./gradlew :phone:compileDebugKotlin *)",
+      "Bash(./gradlew :phone:installDebug)",
+      "Bash(./gradlew :phone:connectedDebugAndroidTest)",
       "Bash(./gradlew build)",
       "Bash(./gradlew test)"
     ]

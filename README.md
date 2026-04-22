@@ -43,7 +43,7 @@ ANDROID_SERIAL=emulator-5554 ./gradlew :watch:connectedDebugAndroidTest  # Compo
 
 ## Project Structure
 
-Multi-module Gradle project: `:shared` (android-library) + `:watch` (android-application). A phone companion module (`:phone`) will be added alongside in a follow-up PR.
+Multi-module Gradle project: `:shared` (android-library) + `:watch` (android-application) + `:phone` (android-application). Watch and phone apps coexist — different `applicationId`s (`com.stocktracker` vs `com.stocktracker.phone`).
 
 ```
 shared/src/main/java/com/stocktracker/shared/
@@ -59,4 +59,11 @@ watch/src/main/java/com/stocktracker/watch/
 ├── tile/             # Wear OS Tile service
 ├── MainActivity.kt   # Launcher
 └── StockApp.kt       # Application class (calls RepositoryFactory)
+
+phone/src/main/java/com/stocktracker/phone/
+├── ui/                    # Material 3 Compose screens, ViewModels, theme, NavigableListDetailPaneScaffold
+├── MainPhoneActivity.kt
+└── StockPhoneApp.kt       # Application class (calls RepositoryFactory)
 ```
+
+The phone app is fold-aware: folded (compact width) shows a single pane that stack-navigates to detail on tap; unfolded (expanded width) shows list and detail side-by-side. Built with `androidx.compose.material3.adaptive.navigation.NavigableListDetailPaneScaffold`.
