@@ -29,6 +29,18 @@
         </activity>
 
         <service
+            android:name=".sync.WatchDataLayerListener"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.DATA_CHANGED" />
+                <data
+                    android:scheme="wear"
+                    android:host="*"
+                    android:pathPrefix="/watchlist/" />
+            </intent-filter>
+        </service>
+
+        <service
             android:name=".tile.StockTileService"
             android:label="@string/tile_label"
             android:description="@string/tile_description"

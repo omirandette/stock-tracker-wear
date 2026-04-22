@@ -67,6 +67,8 @@ dependencies {
     implementation(libs.lifecycle.viewmodel)
 
     implementation(libs.coroutines.android)
+    implementation(libs.coroutines.play.services)
+    implementation(libs.play.services.wearable)
 
     testImplementation(libs.junit)
     testImplementation(libs.mockk)

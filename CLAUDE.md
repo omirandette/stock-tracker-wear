@@ -26,7 +26,8 @@ Multi-module Gradle project:
   - `testutil/MainDispatcherRule.kt` — watch-local copy (duplicated from `:shared` because AGP testFixtures didn't resolve cleanly)
 - `:phone` (`phone/`) — android-application, `applicationId = com.stocktracker.phone`, package `com.stocktracker.phone.*`. Coexists with the watch install.
   - `ui/` — Material 3 Compose screens + ViewModels + theme. List-detail layout via `NavigableListDetailPaneScaffold` (material3-adaptive-navigation), fold-aware automatically.
-  - `MainPhoneActivity.kt`, `StockPhoneApp.kt` — launcher + Application; DI via shared `RepositoryFactory`.
+  - `sync/` — `WatchlistPublisher` observes `repository.watchAll()` and pushes symbol changes to the watch via `WatchlistTransport` (real impl: `DataLayerWatchlistTransport` → `DataClient.putDataItem('/watchlist/symbols')`).
+  - `MainPhoneActivity.kt`, `StockPhoneApp.kt` — launcher + Application; DI via shared `RepositoryFactory`, sync wired in `onCreate`.
   - `testutil/MainDispatcherRule.kt` — phone-local copy, same reason as watch.
 - `gradle/libs.versions.toml` — dependency version catalog
 

@@ -1,7 +1,5 @@
 package com.stocktracker.watch.presentation
 
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -34,7 +32,6 @@ import kotlinx.coroutines.delay
 fun WatchlistScreen(
     viewModel: WatchlistViewModel,
     onStockClick: (Int) -> Unit,
-    onAddClick: () -> Unit,
 ) {
     val stocks by viewModel.stocks.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
@@ -75,8 +72,9 @@ fun WatchlistScreen(
         if (stocks.isEmpty() && !isLoading) {
             item {
                 Text(
-                    text = "No stocks yet",
+                    text = "Add stocks from the phone app",
                     textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.caption2,
                     modifier = Modifier.padding(16.dp),
                 )
             }
@@ -86,7 +84,6 @@ fun WatchlistScreen(
             StockCard(
                 stock = stock,
                 onClick = { onStockClick(index) },
-                onLongClick = { viewModel.removeStock(stock.symbol) },
             )
         }
 
@@ -94,7 +91,6 @@ fun WatchlistScreen(
 
         item {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(onClick = onAddClick) { Text("+") }
                 Button(
                     onClick = { viewModel.refresh() },
                     enabled = !isLoading,
@@ -110,9 +106,8 @@ fun WatchlistScreen(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun StockCard(stock: Stock, onClick: () -> Unit, onLongClick: () -> Unit) {
+private fun StockCard(stock: Stock, onClick: () -> Unit) {
     Card(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
@@ -123,12 +118,7 @@ private fun StockCard(stock: Stock, onClick: () -> Unit, onLongClick: () -> Unit
             priceStyle = MaterialTheme.typography.body2,
             changeStyle = MaterialTheme.typography.caption2.copy(fontSize = 11.sp),
             timestampStyle = MaterialTheme.typography.caption3.copy(fontSize = 10.sp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .combinedClickable(
-                    onClick = onClick,
-                    onLongClick = onLongClick,
-                ),
+            modifier = Modifier.fillMaxWidth(),
         )
     }
 }

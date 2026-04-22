@@ -8,7 +8,6 @@ import com.stocktracker.shared.data.local.StockEntity
 import com.stocktracker.shared.data.repository.StockRepository
 import com.stocktracker.watch.testutil.ConfigurableFakeDataSource
 import com.stocktracker.watch.testutil.InMemoryStockDao
-import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
@@ -36,15 +35,7 @@ class WatchlistScreenTest {
     @Test
     fun emptyState_showsNoStocksMessage() {
         setScreen()
-        composeRule.onNodeWithText("No stocks yet").assertIsDisplayed()
-    }
-
-    @Test
-    fun addButton_callsOnAddClick() {
-        var clicked = false
-        setScreen(onAddClick = { clicked = true })
-        composeRule.onNodeWithText("+").performClick()
-        assertTrue(clicked)
+        composeRule.onNodeWithText("Add stocks from the phone app").assertIsDisplayed()
     }
 
     @Test
@@ -63,14 +54,12 @@ class WatchlistScreenTest {
 
     private fun setScreen(
         onStockClick: (Int) -> Unit = {},
-        onAddClick: () -> Unit = {},
     ) {
         val vm = WatchlistViewModel(repository)
         composeRule.setContent {
             WatchlistScreen(
                 viewModel = vm,
                 onStockClick = onStockClick,
-                onAddClick = onAddClick,
             )
         }
     }
