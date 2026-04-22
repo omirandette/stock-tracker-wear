@@ -1,0 +1,76 @@
+package com.stocktracker.shared.data.api.yahoo
+
+import com.stocktracker.shared.data.api.QuoteResult
+import com.stocktracker.shared.data.api.StockDataSource
+import com.stocktracker.shared.model.ChartData
+import com.stocktracker.shared.model.ChartPoint
+import com.stocktracker.shared.model.SearchResult
+import com.stocktracker.shared.model.TimePeriod
+
+private val EQUITY_TYPES = setOf("EQUITY", "ETF")
+
+class YahooFinanceDataSource(
+    private val api: YahooChartApi,
+    private val searchApi: YahooSearchApi,
+) : StockDataSource {
+
+    override suspend fun getQuote(symbol: String): QuoteResult {
+        val response = api.getChart(symbol, range = "1d", interval = "5m")
+        val result = response.chart.result?.firstOrNull()
+            ?: throw IllegalStateException(
+                response.chart.error?.description ?: "No data for $symbol"
+            )
+        val meta = result.meta
+        val change = meta.regularMarketPrice - meta.previousClose
+        val changePct = if (meta.previousClose != 0.0) {
+            (change / meta.previousClose) * 100
+        } else {
+            0.0
+        }
+        val lastTimestamp = result.timestamp?.lastOrNull()?.let { it * 1000 }
+            ?: System.currentTimeMillis()
+        return QuoteResult(
+            symbol = meta.symbol,
+            price = meta.regularMarketPrice,
+            change = change,
+            changePercent = String.format("%.2f%%", changePct),
+            lastUpdated = lastTimestamp,
+        )
+    }
+
+    override suspend fun getChartData(symbol: String, period: TimePeriod): ChartData {
+        val response = api.getChart(symbol, range = period.yahooRange, interval = period.yahooInterval)
+        val result = response.chart.result?.firstOrNull()
+            ?: throw IllegalStateException(
+                response.chart.error?.description ?: "No chart data for $symbol"
+            )
+        val meta = result.meta
+        val timestamps = result.timestamp ?: return ChartData(emptyList(), 0.0, 0.0)
+        val closes = result.indicators?.quote?.firstOrNull()?.close
+            ?: return ChartData(emptyList(), 0.0, 0.0)
+
+        val points = timestamps.zip(closes).mapNotNull { (ts, close) ->
+            close?.let { ChartPoint(timestamp = ts * 1000, price = it) }
+        }
+
+        val basePrice = meta.chartPreviousClose ?: meta.previousClose
+        val change = meta.regularMarketPrice - basePrice
+        val changePercent = if (basePrice != 0.0) (change / basePrice) * 100 else 0.0
+
+        return ChartData(points, change, changePercent)
+    }
+
+    override suspend fun searchStocks(query: String): List<SearchResult> {
+        val response = searchApi.search(query)
+        return response.quotes
+            .filter { it.quoteType in EQUITY_TYPES }
+            .take(5)
+            .map { quote ->
+                SearchResult(
+                    symbol = quote.symbol,
+                    name = quote.longname ?: quote.shortname ?: quote.symbol,
+                    exchange = quote.exchDisp ?: "",
+                )
+            }
+    }
+}

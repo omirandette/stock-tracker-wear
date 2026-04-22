@@ -15,4 +15,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "stock-tracker-wear"
-include(":app")
+include(":shared", ":watch")

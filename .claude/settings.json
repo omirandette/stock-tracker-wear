@@ -1,10 +1,16 @@
 {
   "permissions": {
     "allow": [
-      "Bash(./gradlew :app:testDebugUnitTest *)",
-      "Bash(./gradlew :app:compileDebugKotlin *)",
+      "Bash(./gradlew :shared:testDebugUnitTest *)",
+      "Bash(./gradlew :watch:testDebugUnitTest *)",
+      "Bash(./gradlew :shared:compileDebugKotlin *)",
+      "Bash(./gradlew :watch:compileDebugKotlin *)",
+      "Bash(./gradlew :shared:recordRoborazziDebug)",
+      "Bash(./gradlew :shared:verifyRoborazziDebug)",
+      "Bash(./gradlew :watch:installDebug)",
+      "Bash(./gradlew :watch:connectedDebugAndroidTest)",
       "Bash(./gradlew build)",
-      "Bash(./gradlew connectedDebugAndroidTest)"
+      "Bash(./gradlew test)"
     ]
   }
 }
