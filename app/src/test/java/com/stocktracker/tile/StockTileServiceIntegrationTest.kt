@@ -10,6 +10,8 @@ import com.stocktracker.TestStockApp
 import com.stocktracker.data.repository.StockRepository
 import com.stocktracker.model.Stock
 import com.google.common.util.concurrent.ListenableFuture
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.flowOf
@@ -102,5 +104,15 @@ class StockTileServiceIntegrationTest {
         )
         val resources = awaitTile(future)
         assertEquals(StockTileService.RESOURCES_VERSION, resources.version)
+    }
+
+    @Test
+    fun `tile enter event triggers refreshAll`() {
+        every { repository.watchAll() } returns flowOf(emptyList())
+        coEvery { repository.refreshAll() } returns Unit
+
+        awaitTile(client.sendOnTileEnterEvent())
+
+        coVerify { repository.refreshAll() }
     }
 }
