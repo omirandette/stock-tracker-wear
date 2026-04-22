@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
@@ -107,8 +108,9 @@ class WatchlistViewModel(
         }
     }
 
-    fun refreshIfStale() {
-        val oldest = stocks.value.minOfOrNull { it.lastUpdated } ?: return
+    suspend fun refreshIfStale() {
+        val currentStocks = repository.watchAll().firstOrNull() ?: return
+        val oldest = currentStocks.minOfOrNull { it.lastUpdated } ?: return
         if (System.currentTimeMillis() - oldest > STALE_THRESHOLD_MS) {
             refresh()
         }

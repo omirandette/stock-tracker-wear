@@ -9,8 +9,7 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -74,6 +73,7 @@ class WatchlistViewModelTest {
 
     @Test
     fun `refreshIfStale does nothing when stocks are empty`() = runTest {
+        every { repository.watchAll() } returns flowOf(emptyList())
         vm.refreshIfStale()
         advanceUntilIdle()
         coVerify(exactly = 0) { repository.refreshAll() }
@@ -83,33 +83,25 @@ class WatchlistViewModelTest {
     fun `refreshIfStale refreshes when data is stale`() = runTest {
         val staleStock = Stock("AAPL", 150.0, 2.0, "1.35%",
             lastUpdated = System.currentTimeMillis() - WatchlistViewModel.STALE_THRESHOLD_MS - 1000)
-        val stocksFlow = MutableStateFlow(listOf(staleStock))
-        every { repository.watchAll() } returns stocksFlow
+        every { repository.watchAll() } returns flowOf(listOf(staleStock))
         coEvery { repository.refreshAll() } returns Unit
-        val staleVm = WatchlistViewModel(repository)
-        val job = backgroundScope.launch { staleVm.stocks.collect {} }
 
+        vm.refreshIfStale()
         advanceUntilIdle()
-        staleVm.refreshIfStale()
-        advanceUntilIdle()
+
         coVerify { repository.refreshAll() }
-        job.cancel()
     }
 
     @Test
     fun `refreshIfStale does not refresh when data is fresh`() = runTest {
         val freshStock = Stock("AAPL", 150.0, 2.0, "1.35%",
             lastUpdated = System.currentTimeMillis())
-        val stocksFlow = MutableStateFlow(listOf(freshStock))
-        every { repository.watchAll() } returns stocksFlow
-        val freshVm = WatchlistViewModel(repository)
-        val job = backgroundScope.launch { freshVm.stocks.collect {} }
+        every { repository.watchAll() } returns flowOf(listOf(freshStock))
 
+        vm.refreshIfStale()
         advanceUntilIdle()
-        freshVm.refreshIfStale()
-        advanceUntilIdle()
+
         coVerify(exactly = 0) { repository.refreshAll() }
-        job.cancel()
     }
 
     @Test
