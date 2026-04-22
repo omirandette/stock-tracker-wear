@@ -15,6 +15,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -37,6 +38,7 @@ import com.stocktracker.shared.ui.formatPrice
 fun PhoneStockDetailScreen(
     stock: Stock,
     viewModel: PhoneStockDetailViewModel,
+    onRemove: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     var period by remember(stock.symbol) { mutableStateOf(TimePeriod.ONE_DAY) }
@@ -90,6 +92,16 @@ fun PhoneStockDetailScreen(
                     label = { Text(p.label) },
                     colors = FilterChipDefaults.filterChipColors(),
                 )
+            }
+        }
+
+        if (onRemove != null) {
+            Spacer(Modifier.height(24.dp))
+            OutlinedButton(
+                onClick = onRemove,
+                modifier = Modifier.align(Alignment.End),
+            ) {
+                Text("Remove from watchlist")
             }
         }
     }
