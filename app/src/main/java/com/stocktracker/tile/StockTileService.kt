@@ -64,7 +64,15 @@ class StockTileService : TileService() {
     }
 
     override fun onTileEnterEvent(requestParams: EventBuilders.TileEnterEvent) {
-        getUpdater(this).requestUpdate(StockTileService::class.java)
+        val repository = (application as StockApp).repository
+        scope.launch {
+            try {
+                repository.refreshAll()
+            } catch (_: Exception) {
+                // Keep stale data if refresh fails; still update tile
+            }
+            getUpdater(this@StockTileService).requestUpdate(StockTileService::class.java)
+        }
     }
 
     override fun onTileResourcesRequest(
