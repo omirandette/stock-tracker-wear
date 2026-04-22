@@ -64,6 +64,10 @@ Multi-module Gradle project:
 - Do not commit unless explicitly asked
 - Before creating a commit, run ALL local tests: `./gradlew test`, `./gradlew :shared:verifyRoborazziDebug`, AND `ANDROID_SERIAL=emulator-5554 ./gradlew :watch:connectedDebugAndroidTest`
 - Always run tests before creating a PR
+- Before merging any PR, all three of these must be true:
+  1. `build` check = SUCCESS
+  2. `claude-review` check = SUCCESS (infrastructure failures like Anthropic rate limits are NOT an exception — wait for reset and retrigger; never `--admin` past a failed `claude-review`)
+  3. The review body and any comments have been read via `gh pr view <num> --json reviews,comments,statusCheckRollup` and substantive feedback addressed. Silent green (check SUCCESS + empty review body + no comments) is the only "merge immediately" case.
 - Each PR and commit should have a single intent/purpose
 - Keep PRs under 200 lines of code; 400 lines max in exceptional cases (mechanical module splits may exceed this)
 - Keep `README.md` up to date — if a PR changes features, commands, setup, or project structure, update the README in the same PR
