@@ -29,6 +29,15 @@
 - Do not use arbitrary sleep values — default to `sleep 10` unless a longer wait is justified
 - Do not use arbitrary tail/head values — default to `tail -20` / `head -20` unless more lines are needed
 
+## Emulator Setup
+- The Wear OS emulator is required for `connectedDebugAndroidTest` — it is part of the standard pre-commit workflow
+- If no emulator is installed/running, Claude MUST install and start one — do not ask the user to do it
+- `sdkmanager` is at `/opt/homebrew/share/android-commandlinetools/cmdline-tools/latest/bin/sdkmanager`
+- `avdmanager` is at `/opt/homebrew/share/android-commandlinetools/cmdline-tools/latest/bin/avdmanager`
+- `adb` is at `/opt/homebrew/share/android-commandlinetools/platform-tools/adb`
+- `emulator` lives under `/opt/homebrew/share/android-commandlinetools/emulator/emulator` after installing the `emulator` package
+- Install a Wear OS system image (e.g. `sdkmanager "system-images;android-34;android-wear;arm64-v8a"`), create an AVD, then launch with `emulator @<avd-name> -no-snapshot -no-window &` and poll `adb devices` until it shows `emulator-5554 device`
+
 ## Testing Conventions
 - Unit tests use JUnit 4 + MockK + `kotlinx-coroutines-test`
 - `MainDispatcherRule` for ViewModel tests (`testutil/MainDispatcherRule.kt`)
