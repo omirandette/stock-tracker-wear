@@ -8,13 +8,8 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,7 +27,6 @@ import kotlinx.coroutines.delay
 fun PhoneWatchlistScreen(
     viewModel: PhoneWatchlistViewModel,
     onStockClick: (Stock) -> Unit,
-    onAddClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val stocks by viewModel.stocks.collectAsState()
@@ -46,31 +40,23 @@ fun PhoneWatchlistScreen(
         }
     }
 
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        containerColor = MaterialTheme.colorScheme.background,
-        floatingActionButton = {
-            FloatingActionButton(onClick = onAddClick) {
-                Icon(Icons.Default.Add, contentDescription = "Add stock")
-            }
-        },
-    ) { padding ->
+    Surface(modifier = modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         if (stocks.isEmpty() && !isLoading) {
             Box(
-                modifier = Modifier.fillMaxSize().padding(padding).padding(24.dp),
+                modifier = Modifier.fillMaxSize().padding(24.dp),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    text = "No stocks yet\nTap + to add one",
+                    text = "No stocks yet",
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            return@Scaffold
+            return@Surface
         }
 
         LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(padding),
+            modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(0.dp),
         ) {
             if (error != null) {
