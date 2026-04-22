@@ -6,8 +6,14 @@
 package com.stocktracker.phone.ui
 
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.adaptive.layout.AnimatedPane
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole
 import androidx.compose.material3.adaptive.navigation.NavigableListDetailPaneScaffold
@@ -42,40 +48,52 @@ fun StockTrackerPhoneApp(app: StockPhoneApp) {
             val stocks by watchlistViewModel.stocks.collectAsState()
             var showAddSheet by remember { mutableStateOf(false) }
 
-            NavigableListDetailPaneScaffold(
-                navigator = navigator,
-                listPane = {
-                    AnimatedPane {
-                        PhoneWatchlistScreen(
-                            viewModel = watchlistViewModel,
-                            onStockClick = { stock ->
-                                navigator.navigateTo(
-                                    ListDetailPaneScaffoldRole.Detail,
-                                    stock.symbol,
-                                )
-                            },
-                            onAddClick = { showAddSheet = true },
-                        )
-                    }
+            Scaffold(
+                topBar = {
+                    TopAppBar(
+                        title = { Text("Stock Tracker") },
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = MaterialTheme.colorScheme.surface,
+                        ),
+                    )
                 },
-                detailPane = {
-                    AnimatedPane {
-                        val symbol = navigator.currentDestination?.content as? String
-                        val selected: Stock? = symbol?.let { s -> stocks.firstOrNull { it.symbol == s } }
-                        if (selected != null) {
-                            val coroutineScope = rememberCoroutineScope()
-                            PhoneStockDetailScreen(
-                                stock = selected,
-                                viewModel = detailViewModel,
-                                onRemove = {
-                                    watchlistViewModel.removeStock(selected.symbol)
-                                    coroutineScope.launch { navigator.navigateBack() }
+            ) { scaffoldPadding ->
+                NavigableListDetailPaneScaffold(
+                    modifier = Modifier.padding(scaffoldPadding).fillMaxSize(),
+                    navigator = navigator,
+                    listPane = {
+                        AnimatedPane {
+                            PhoneWatchlistScreen(
+                                viewModel = watchlistViewModel,
+                                onStockClick = { stock ->
+                                    navigator.navigateTo(
+                                        ListDetailPaneScaffoldRole.Detail,
+                                        stock.symbol,
+                                    )
                                 },
+                                onAddClick = { showAddSheet = true },
                             )
                         }
-                    }
-                },
-            )
+                    },
+                    detailPane = {
+                        AnimatedPane {
+                            val symbol = navigator.currentDestination?.content as? String
+                            val selected: Stock? = symbol?.let { s -> stocks.firstOrNull { it.symbol == s } }
+                            if (selected != null) {
+                                val coroutineScope = rememberCoroutineScope()
+                                PhoneStockDetailScreen(
+                                    stock = selected,
+                                    viewModel = detailViewModel,
+                                    onRemove = {
+                                        watchlistViewModel.removeStock(selected.symbol)
+                                        coroutineScope.launch { navigator.navigateBack() }
+                                    },
+                                )
+                            }
+                        }
+                    },
+                )
+            }
 
             if (showAddSheet) {
                 val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
