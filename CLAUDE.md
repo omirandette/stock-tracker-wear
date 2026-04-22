@@ -65,6 +65,7 @@ Multi-module Gradle project:
 - Do not commit unless explicitly asked
 - Before creating a commit, run ALL local tests: `./gradlew test`, `./gradlew :shared:verifyRoborazziDebug`, AND `ANDROID_SERIAL=emulator-5554 ./gradlew :watch:connectedDebugAndroidTest`
 - Always run tests before creating a PR
+- **Debug with a failing unit/Roborazzi test FIRST.** When the user reports a bug, reproduce it in a JVM test (unit test, Robolectric, or Roborazzi snapshot) before doing any `installDebug` + `adb shell input` + `screencap` work on an emulator. Emulator round-trips burn context and credits; one Roborazzi PNG captures the same rendering state in seconds on the JVM. Escalate to an emulator only when the bug provably cannot be reproduced off-device (WindowSizeClass, IME, GMS), and even then write a specific instrumented test — don't iterate manual taps. Never loop `install → tap → screencap → read`.
 - Before merging any PR, all three of these must be true:
   1. `build` check = SUCCESS
   2. `claude-review` check = SUCCESS (infrastructure failures like Anthropic rate limits are NOT an exception — wait for reset and retrigger; never `--admin` past a failed `claude-review`)
