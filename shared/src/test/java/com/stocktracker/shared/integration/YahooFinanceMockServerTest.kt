@@ -56,12 +56,25 @@ class YahooFinanceMockServerTest {
     }
 
     @Test
-    fun `chart JSON maps to ChartData with points and change`() = runTest {
+    fun `chart JSON maps to ChartData with points and period-scoped change`() = runTest {
         server.enqueue(MockResponse().setBody(CHART_JSON))
         val data = ds.getChartData("AAPL", TimePeriod.FIVE_DAYS)
         assertEquals(2, data.points.size)
         assertEquals(1700000000000L, data.points[0].timestamp)
         assertEquals(188.5, data.points[0].price, 0.01)
+        // For any period > 1D, change is computed from the first chart point
+        // (start-of-range close), not from chartPreviousClose (which Yahoo often
+        // still sets to yesterday regardless of range).
+        val expectedChange = 189.84 - 188.5
+        assertEquals(expectedChange, data.change, 0.01)
+        assertEquals((expectedChange / 188.5) * 100, data.changePercent, 0.01)
+    }
+
+    @Test
+    fun `chart JSON for ONE_DAY uses chartPreviousClose for change`() = runTest {
+        server.enqueue(MockResponse().setBody(CHART_JSON))
+        val data = ds.getChartData("AAPL", TimePeriod.ONE_DAY)
+        // 1D: base = chartPreviousClose (187.0 in the fixture JSON)
         assertEquals(189.84 - 187.0, data.change, 0.01)
         assertEquals(((189.84 - 187.0) / 187.0) * 100, data.changePercent, 0.01)
     }
