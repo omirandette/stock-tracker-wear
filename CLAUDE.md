@@ -26,7 +26,8 @@ Multi-module Gradle project:
   - `testutil/MainDispatcherRule.kt` — watch-local copy (duplicated from `:shared` because AGP testFixtures didn't resolve cleanly)
 - `:phone` (`phone/`) — android-application, `applicationId = com.stocktracker.phone`, package `com.stocktracker.phone.*`. Coexists with the watch install.
   - `ui/` — Material 3 Compose screens + ViewModels + theme. List-detail layout via `NavigableListDetailPaneScaffold` (material3-adaptive-navigation), fold-aware automatically.
-  - `MainPhoneActivity.kt`, `StockPhoneApp.kt` — launcher + Application; DI via shared `RepositoryFactory`.
+  - `sync/` — `WatchlistPublisher` observes `repository.watchAll()` and pushes symbol changes to the watch via `WatchlistTransport` (real impl: `DataLayerWatchlistTransport` → `DataClient.putDataItem('/watchlist/symbols')`).
+  - `MainPhoneActivity.kt`, `StockPhoneApp.kt` — launcher + Application; DI via shared `RepositoryFactory`, sync wired in `onCreate`.
   - `testutil/MainDispatcherRule.kt` — phone-local copy, same reason as watch.
 - `gradle/libs.versions.toml` — dependency version catalog
 
@@ -64,6 +65,7 @@ Multi-module Gradle project:
 - Do not commit unless explicitly asked
 - Before creating a commit, run ALL local tests: `./gradlew test`, `./gradlew :shared:verifyRoborazziDebug`, AND `ANDROID_SERIAL=emulator-5554 ./gradlew :watch:connectedDebugAndroidTest`
 - Always run tests before creating a PR
+- **Debug with a failing unit/Roborazzi test FIRST.** When the user reports a bug, reproduce it in a JVM test (unit test, Robolectric, or Roborazzi snapshot) before doing any `installDebug` + `adb shell input` + `screencap` work on an emulator. Emulator round-trips burn context and credits; one Roborazzi PNG captures the same rendering state in seconds on the JVM. Escalate to an emulator only when the bug provably cannot be reproduced off-device (WindowSizeClass, IME, GMS), and even then write a specific instrumented test — don't iterate manual taps. Never loop `install → tap → screencap → read`.
 - Before merging any PR, all three of these must be true:
   1. `build` check = SUCCESS
   2. `claude-review` check = SUCCESS (infrastructure failures like Anthropic rate limits are NOT an exception — wait for reset and retrigger; never `--admin` past a failed `claude-review`)

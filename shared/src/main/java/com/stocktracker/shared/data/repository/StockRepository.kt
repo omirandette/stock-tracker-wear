@@ -47,6 +47,22 @@ class StockRepository(
         dao.delete(symbol)
     }
 
+    /**
+     * Inserts a symbol with placeholder price/change values without hitting the API.
+     * Used by the watch's sync listener; the auto-refresh loop fills in real data shortly after.
+     */
+    suspend fun insertPlaceholder(symbol: String) {
+        dao.insert(
+            StockEntity(
+                symbol = symbol.uppercase(),
+                price = 0.0,
+                change = 0.0,
+                changePercent = "0.00%",
+                lastUpdated = 0L,
+            )
+        )
+    }
+
     suspend fun getChartData(symbol: String, period: TimePeriod): ChartData {
         return dataSource.getChartData(symbol, period)
     }

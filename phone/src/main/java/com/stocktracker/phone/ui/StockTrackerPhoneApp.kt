@@ -67,6 +67,9 @@ fun StockTrackerPhoneApp(app: StockPhoneApp) {
                             PhoneStockDetailScreen(
                                 stock = selected,
                                 viewModel = detailViewModel,
+                                onBack = if (navigator.canNavigateBack()) {
+                                    { coroutineScope.launch { navigator.navigateBack() } }
+                                } else null,
                                 onRemove = {
                                     watchlistViewModel.removeStock(selected.symbol)
                                     coroutineScope.launch { navigator.navigateBack() }

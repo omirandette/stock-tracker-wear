@@ -62,8 +62,18 @@ watch/src/main/java/com/stocktracker/watch/
 
 phone/src/main/java/com/stocktracker/phone/
 ├── ui/                    # Material 3 Compose screens, ViewModels, theme, NavigableListDetailPaneScaffold
+├── sync/                  # WatchlistPublisher + Wearable Data Layer transport (phone → watch sync)
 ├── MainPhoneActivity.kt
-└── StockPhoneApp.kt       # Application class (calls RepositoryFactory)
+└── StockPhoneApp.kt       # Application class (calls RepositoryFactory + starts WatchlistPublisher)
 ```
 
 The phone app is fold-aware: folded (compact width) shows a single pane that stack-navigates to detail on tap; unfolded (expanded width) shows list and detail side-by-side. Built with `androidx.compose.material3.adaptive.navigation.NavigableListDetailPaneScaffold`.
+
+### Watch ↔ phone sync
+
+The phone is the sole editor of the watchlist (add/remove/search). The watch observes changes over the Wearable Data Layer and keeps a local Room mirror in sync:
+
+- Phone: `WatchlistPublisher` debounces `repository.watchAll()` emissions and writes the symbol list to `DataClient` at path `/watchlist/symbols`.
+- Watch: `WatchDataLayerListener` (a `WearableListenerService`) receives the update, diffs against its Room DB, inserts placeholder rows for new symbols (the existing auto-refresh loop backfills prices), and deletes removed ones.
+- Only symbols cross the link — prices remain device-local and refresh from Yahoo Finance independently on each side.
+- Auto Backup continues to handle cross-device restore on reinstall as a fallback.

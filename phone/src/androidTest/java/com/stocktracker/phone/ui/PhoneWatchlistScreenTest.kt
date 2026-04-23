@@ -1,17 +1,20 @@
-package com.stocktracker.watch.presentation
+package com.stocktracker.phone.ui
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import com.stocktracker.phone.testutil.ConfigurableFakeDataSource
+import com.stocktracker.phone.testutil.InMemoryStockDao
+import com.stocktracker.phone.ui.theme.PhoneTheme
 import com.stocktracker.shared.data.local.StockEntity
 import com.stocktracker.shared.data.repository.StockRepository
-import com.stocktracker.watch.testutil.ConfigurableFakeDataSource
-import com.stocktracker.watch.testutil.InMemoryStockDao
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
-class WatchlistScreenTest {
+class PhoneWatchlistScreenTest {
 
     @get:Rule val composeRule = createComposeRule()
 
@@ -20,7 +23,7 @@ class WatchlistScreenTest {
     private val repository = StockRepository(dataSource, dao)
 
     @Test
-    fun stockCards_displaySymbolsAndPrices() {
+    fun stockRows_displaySymbolsAndPrices() {
         dao.seed(
             StockEntity("AAPL", 150.0, 2.0, "1.35%", System.currentTimeMillis()),
             StockEntity("GOOG", 2800.0, -15.0, "-0.53%", System.currentTimeMillis()),
@@ -33,13 +36,13 @@ class WatchlistScreenTest {
     }
 
     @Test
-    fun emptyState_showsNoStocksMessage() {
+    fun emptyState_showsAddHint() {
         setScreen()
-        composeRule.onNodeWithText("Add stocks from the phone app").assertIsDisplayed()
+        composeRule.onNodeWithText("No stocks yet\nTap + to add one").assertIsDisplayed()
     }
 
     @Test
-    fun positiveChange_showsGreenText() {
+    fun positiveChange_showsText() {
         dao.seed(StockEntity("AAPL", 150.0, 2.0, "1.35%", System.currentTimeMillis()))
         setScreen()
         composeRule.onNodeWithText("+2.00 (1.35%)").assertIsDisplayed()
@@ -52,15 +55,27 @@ class WatchlistScreenTest {
         composeRule.onNodeWithText("-15.00 (-0.53%)").assertIsDisplayed()
     }
 
+    @Test
+    fun fab_invokesOnAddClick() {
+        var clicked = false
+        setScreen(onAddClick = { clicked = true })
+        composeRule.onNodeWithContentDescription("Add stock").performClick()
+        assertTrue(clicked)
+    }
+
     private fun setScreen(
-        onStockClick: (Int) -> Unit = {},
+        onStockClick: (com.stocktracker.shared.model.Stock) -> Unit = {},
+        onAddClick: () -> Unit = {},
     ) {
-        val vm = WatchlistViewModel(repository)
+        val vm = PhoneWatchlistViewModel(repository)
         composeRule.setContent {
-            WatchlistScreen(
-                viewModel = vm,
-                onStockClick = onStockClick,
-            )
+            PhoneTheme {
+                PhoneWatchlistScreen(
+                    viewModel = vm,
+                    onStockClick = onStockClick,
+                    onAddClick = onAddClick,
+                )
+            }
         }
     }
 }

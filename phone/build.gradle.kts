@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.roborazzi)
 }
 
 android {
@@ -46,8 +47,21 @@ android {
         unitTests {
             isIncludeAndroidResources = true
             isReturnDefaultValues = true
+            all {
+                val isRelease = it.name.contains("Release", ignoreCase = true)
+                if (isRelease) {
+                    it.exclude("**/PhoneWatchlistSnapshotTest*")
+                    it.exclude("**/PhoneStockDetailSnapshotTest*")
+                    it.exclude("**/PhoneAddStockSnapshotTest*")
+                    it.exclude("**/PhoneWatchlistBrkBReproTest*")
+                }
+            }
         }
     }
+}
+
+roborazzi {
+    outputDir.set(file("src/test/snapshots/roborazzi"))
 }
 
 dependencies {
@@ -67,12 +81,17 @@ dependencies {
     implementation(libs.lifecycle.viewmodel)
 
     implementation(libs.coroutines.android)
+    implementation(libs.coroutines.play.services)
+    implementation(libs.play.services.wearable)
 
     testImplementation(libs.junit)
     testImplementation(libs.mockk)
     testImplementation(libs.coroutines.test)
     testImplementation(libs.turbine)
     testImplementation(libs.robolectric)
+    testImplementation(libs.roborazzi.core)
+    testImplementation(libs.roborazzi.compose)
+    testImplementation(libs.roborazzi.junit.rule)
     testImplementation(libs.compose.ui.test.junit4)
     testImplementation(libs.compose.ui.test.manifest)
     testImplementation(project(":shared"))
