@@ -50,19 +50,18 @@ open class WatchDataLayerListener : WearableListenerService() {
         (application as? StockApp)?.repository
 
     internal suspend fun applyIncoming(repository: StockRepository, incoming: List<String>) {
-        val current = repository.watchAll().first().map { it.symbol }.toSet()
-        val incomingSet = incoming.toSet()
+        val current = repository.watchAll().first().map { it.symbol }
+        if (current.toSet() == incoming.toSet()) return
 
-        // Delete symbols the phone removed.
-        (current - incomingSet).forEach { symbol ->
+        // Phone is the source of truth. If the list differs, replace it wholesale.
+        // Auto-refresh loop backfills prices on the new placeholders.
+        current.forEach { symbol ->
             try {
                 repository.removeStock(symbol)
             } catch (_: Exception) {
             }
         }
-
-        // Insert new symbols with a placeholder entity — the refresh loop backfills prices.
-        (incomingSet - current).forEach { symbol ->
+        incoming.forEach { symbol ->
             try {
                 repository.insertPlaceholder(symbol)
             } catch (_: Exception) {
