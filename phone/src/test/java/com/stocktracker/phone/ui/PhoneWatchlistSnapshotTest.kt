@@ -44,6 +44,7 @@ class PhoneWatchlistSnapshotTest {
                     priceStyle = androidx.compose.material3.MaterialTheme.typography.titleMedium,
                     changeStyle = androidx.compose.material3.MaterialTheme.typography.bodySmall,
                     timestampStyle = androidx.compose.material3.MaterialTheme.typography.bodySmall,
+                    contentColor = androidx.compose.material3.MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier,
                 )
             }
@@ -62,6 +63,7 @@ class PhoneWatchlistSnapshotTest {
                     priceStyle = androidx.compose.material3.MaterialTheme.typography.titleMedium,
                     changeStyle = androidx.compose.material3.MaterialTheme.typography.bodySmall,
                     timestampStyle = androidx.compose.material3.MaterialTheme.typography.bodySmall,
+                    contentColor = androidx.compose.material3.MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier,
                 )
             }

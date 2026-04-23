@@ -118,6 +118,7 @@ private fun StockCard(stock: Stock, onClick: () -> Unit) {
             priceStyle = MaterialTheme.typography.body2,
             changeStyle = MaterialTheme.typography.caption2.copy(fontSize = 11.sp),
             timestampStyle = MaterialTheme.typography.caption3.copy(fontSize = 10.sp),
+            contentColor = Color.White,
             modifier = Modifier.fillMaxWidth(),
         )
     }
