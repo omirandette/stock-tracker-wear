@@ -84,6 +84,10 @@ dependencies {
     implementation(libs.coroutines.play.services)
     implementation(libs.play.services.wearable)
 
+    implementation(libs.glance.appwidget)
+    implementation(libs.glance.material3)
+    implementation(libs.work.runtime.ktx)
+
     testImplementation(libs.junit)
     testImplementation(libs.mockk)
     testImplementation(libs.coroutines.test)
@@ -99,6 +103,7 @@ dependencies {
     androidTestImplementation(libs.compose.ui.test.junit4)
     androidTestImplementation(libs.test.runner)
     androidTestImplementation(libs.test.rules)
+    androidTestImplementation(libs.work.testing)
     androidTestImplementation(project(":shared"))
     debugImplementation(libs.compose.ui.test.manifest)
 }
