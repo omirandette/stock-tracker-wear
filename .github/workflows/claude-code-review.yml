@@ -3,46 +3,86 @@ name: Claude Code Review
 on:
   pull_request:
     types: [opened, synchronize, ready_for_review, reopened]
-    # Optional: Only run on specific file changes
-    # paths:
-    #   - "src/**/*.ts"
-    #   - "src/**/*.tsx"
-    #   - "src/**/*.js"
-    #   - "src/**/*.jsx"
 
 jobs:
   claude-review:
-    # Optional: Filter by PR author
-    # if: |
-    #   github.event.pull_request.user.login == 'external-contributor' ||
-    #   github.event.pull_request.user.login == 'new-developer' ||
-    #   github.event.pull_request.author_association == 'FIRST_TIME_CONTRIBUTOR'
-
     runs-on: ubuntu-latest
     permissions:
       contents: read
       pull-requests: write
       issues: write
-      id-token: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 0
 
-      - name: Run Claude Code Review
-        id: claude-review
-        uses: anthropics/claude-code-action@v1
-        with:
-          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          plugin_marketplaces: 'https://github.com/anthropics/claude-code.git'
-          plugins: 'code-review@claude-code-plugins'
-          prompt: '/code-review:code-review ${{ github.repository }}/pull/${{ github.event.pull_request.number }}'
-          claude_args: '--model claude-sonnet-4-6'
-          use_sticky_comment: 'true'
-          classify_inline_comments: 'false'
-          show_full_output: 'true'
-          # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
-          # or https://code.claude.com/docs/en/cli-reference for available options
+      - name: Install Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code
 
+      - name: Run review and post
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+
+          diff=$(gh pr diff "$PR_NUMBER")
+          pr_title=$(gh pr view "$PR_NUMBER" --json title -q .title)
+          pr_body=$(gh pr view "$PR_NUMBER" --json body -q .body)
+          claude_md=$(cat CLAUDE.md 2>/dev/null || echo "")
+
+          # Truncate very large diffs to stay within token budget.
+          diff_size=$(printf '%s' "$diff" | wc -c)
+          if [ "$diff_size" -gt 200000 ]; then
+            diff=$(printf '%s' "$diff" | head -c 200000)
+            diff="$diff
+
+          [... diff truncated at 200k chars ...]"
+          fi
+
+          {
+            echo "You are reviewing a pull request for the stock-tracker-wear repo."
+            echo
+            echo "**PR title:** $pr_title"
+            echo
+            echo "**PR description:**"
+            echo "$pr_body"
+            echo
+            echo "**Project conventions (CLAUDE.md):**"
+            echo "$claude_md"
+            echo
+            echo "**Diff:**"
+            echo '```diff'
+            echo "$diff"
+            echo '```'
+            echo
+            echo "Identify concrete issues only:"
+            echo "- bugs / logic errors"
+            echo "- leftover debug code (println, TODO, commented-out blocks)"
+            echo "- unambiguous CLAUDE.md violations"
+            echo
+            echo "For each issue: quote the file and line, say what's wrong, say how to fix. Be terse."
+            echo
+            echo "If nothing is wrong, reply with exactly: NO_ISSUES"
+          } > /tmp/prompt.txt
+
+          review=$(claude --model claude-sonnet-4-6 --print < /tmp/prompt.txt)
+
+          if [ -z "$review" ] || [ "$review" = "NO_ISSUES" ]; then
+            echo "Claude found no issues — not posting a comment."
+            exit 0
+          fi
+
+          {
+            echo "## Claude Code Review"
+            echo
+            echo "$review"
+            echo
+            echo "---"
+            echo "*Automated review — flag false positives in a reply.*"
+          } > /tmp/body.md
+
+          gh pr comment "$PR_NUMBER" --body-file /tmp/body.md
