@@ -38,9 +38,12 @@ class PhoneStockDetailScreenTest {
 
     @Test
     fun displaysSymbolAndPrice() {
-        setScreen(Stock("AAPL", 189.84, 2.35, "1.25%", 0L))
+        // Use a header price that doesn't collide with the chart fixture's max
+        // (189.84) — otherwise PriceChart's Y-axis max label renders the same
+        // text as the header and the single-node assertion matches both.
+        setScreen(Stock("AAPL", 200.50, 2.35, "1.25%", 0L))
         composeRule.onNodeWithText("AAPL").assertIsDisplayed()
-        composeRule.onNodeWithText("$189.84").assertIsDisplayed()
+        composeRule.onNodeWithText("$200.50").assertIsDisplayed()
         composeRule.onNodeWithText("+2.35 (1.25%)").assertIsDisplayed()
     }
 
