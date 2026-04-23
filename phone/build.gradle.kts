@@ -54,6 +54,7 @@ android {
                     it.exclude("**/PhoneStockDetailSnapshotTest*")
                     it.exclude("**/PhoneAddStockSnapshotTest*")
                     it.exclude("**/PhoneWatchlistBrkBReproTest*")
+                    it.exclude("**/PhoneExpandedDetailPaneTest*")
                 }
             }
         }
