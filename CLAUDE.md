@@ -43,7 +43,7 @@ Multi-module Gradle project:
 
 ## Effort Level (`/effort`)
 
-User default is `xhigh` (set in `~/.claude/settings.json`). Switch with `/effort high` or `/effort xhigh` at the start of a task — don't toggle mid-task.
+User default is `high` (set in `~/.claude/settings.json`). Switch with `/effort xhigh` at the start of a task when the bullets below apply — don't toggle mid-task.
 
 **Use `xhigh` for:**
 - Architecture / module-split decisions, DI choices, data-flow design
