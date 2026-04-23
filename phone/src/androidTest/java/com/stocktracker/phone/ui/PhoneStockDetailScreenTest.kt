@@ -2,7 +2,9 @@ package com.stocktracker.phone.ui
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.stocktracker.phone.testutil.ConfigurableFakeDataSource
@@ -66,13 +68,37 @@ class PhoneStockDetailScreenTest {
         assertEquals(0, nodes.size)
     }
 
-    private fun setScreen(stock: Stock, onRemove: (() -> Unit)? = null) {
+    @Test
+    fun backButton_invokesOnBack_whenProvided() {
+        var backClicked = false
+        setScreen(
+            stock = Stock("AAPL", 189.84, 2.35, "1.25%", 0L),
+            onBack = { backClicked = true },
+        )
+        composeRule.onNodeWithContentDescription("Back").assertIsDisplayed().performClick()
+        assertTrue(backClicked)
+    }
+
+    @Test
+    fun noOnBack_hidesBackButton() {
+        setScreen(Stock("AAPL", 189.84, 2.35, "1.25%", 0L), onBack = null)
+        val nodes = composeRule.onAllNodesWithContentDescription("Back")
+            .fetchSemanticsNodes(atLeastOneRootRequired = false)
+        assertEquals(0, nodes.size)
+    }
+
+    private fun setScreen(
+        stock: Stock,
+        onRemove: (() -> Unit)? = null,
+        onBack: (() -> Unit)? = null,
+    ) {
         val vm = PhoneStockDetailViewModel(repository)
         composeRule.setContent {
             PhoneTheme {
                 PhoneStockDetailScreen(
                     stock = stock,
                     viewModel = vm,
+                    onBack = onBack,
                     onRemove = onRemove,
                 )
             }

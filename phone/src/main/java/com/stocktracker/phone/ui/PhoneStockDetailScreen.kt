@@ -1,9 +1,10 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+
 package com.stocktracker.phone.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,12 +12,19 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -38,6 +46,7 @@ import com.stocktracker.shared.ui.formatPrice
 fun PhoneStockDetailScreen(
     stock: Stock,
     viewModel: PhoneStockDetailViewModel,
+    onBack: (() -> Unit)? = null,
     onRemove: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
@@ -50,58 +59,86 @@ fun PhoneStockDetailScreen(
         viewModel.loadChart(stock.symbol, period)
     }
 
-    Column(modifier = modifier.fillMaxSize().padding(16.dp)) {
-        Text(text = stock.symbol, style = MaterialTheme.typography.headlineMedium)
-        Spacer(Modifier.height(4.dp))
-        Text(text = formatPrice(stock.price), style = MaterialTheme.typography.headlineSmall)
-        Text(
-            text = formatChangeWithPercent(stock),
-            color = if (stock.change >= 0) StockColors.up else StockColors.down,
-            style = MaterialTheme.typography.bodyMedium,
-        )
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
+        containerColor = MaterialTheme.colorScheme.background,
+        topBar = {
+            TopAppBar(
+                title = { Text(stock.symbol) },
+                navigationIcon = {
+                    if (onBack != null) {
+                        IconButton(onClick = onBack) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back",
+                            )
+                        }
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                ),
+            )
+        },
+    ) { padding ->
+        Column(modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp)) {
+            Text(
+                text = formatPrice(stock.price),
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Text(
+                text = formatChangeWithPercent(stock),
+                color = if (stock.change >= 0) StockColors.up else StockColors.down,
+                style = MaterialTheme.typography.bodyMedium,
+            )
 
-        Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(16.dp))
 
-        Box(
-            modifier = Modifier.fillMaxWidth().height(220.dp),
-            contentAlignment = Alignment.Center,
-        ) {
-            when {
-                isLoading -> CircularProgressIndicator()
-                error != null -> Text(error!!, color = MaterialTheme.colorScheme.error)
-                chart.points.size < 2 -> Text(
-                    "No data",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                else -> PriceChart(
-                    points = chart.points,
-                    isPositive = chart.change >= 0,
-                    labelStyle = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.fillMaxSize(),
-                )
-            }
-        }
-
-        Spacer(Modifier.height(12.dp))
-
-        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            items(TimePeriod.activePeriods()) { p ->
-                FilterChip(
-                    selected = p == period,
-                    onClick = { period = p },
-                    label = { Text(p.label) },
-                    colors = FilterChipDefaults.filterChipColors(),
-                )
-            }
-        }
-
-        if (onRemove != null) {
-            Spacer(Modifier.height(24.dp))
-            OutlinedButton(
-                onClick = onRemove,
-                modifier = Modifier.align(Alignment.End),
+            Box(
+                modifier = Modifier.fillMaxWidth().height(220.dp),
+                contentAlignment = Alignment.Center,
             ) {
-                Text("Remove from watchlist")
+                when {
+                    isLoading -> CircularProgressIndicator()
+                    error != null -> Text(error!!, color = MaterialTheme.colorScheme.error)
+                    chart.points.size < 2 -> Text(
+                        "No data",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    else -> PriceChart(
+                        points = chart.points,
+                        isPositive = chart.change >= 0,
+                        labelStyle = MaterialTheme.typography.bodySmall
+                            .copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(12.dp))
+
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                items(TimePeriod.activePeriods()) { p ->
+                    FilterChip(
+                        selected = p == period,
+                        onClick = { period = p },
+                        label = { Text(p.label) },
+                        colors = FilterChipDefaults.filterChipColors(),
+                    )
+                }
+            }
+
+            if (onRemove != null) {
+                Spacer(Modifier.height(24.dp))
+                OutlinedButton(
+                    onClick = onRemove,
+                    modifier = Modifier.align(Alignment.End),
+                ) {
+                    Text("Remove from watchlist")
+                }
             }
         }
     }
