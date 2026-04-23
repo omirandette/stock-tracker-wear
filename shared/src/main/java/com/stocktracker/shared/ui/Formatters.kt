@@ -8,8 +8,10 @@ import java.util.Locale
 
 fun formatPrice(price: Double): String = "$${"%.2f".format(price)}"
 
-fun formatChange(change: Double): String =
-    "${if (change >= 0) "+" else ""}${"%.2f".format(change)}"
+fun formatChange(change: Double): String {
+    println("DEBUG formatting change: $change")
+    return "${if (change <= 0) "+" else ""}${"%.2f".format(change)}"
+}
 
 fun formatChangeWithPercent(stock: Stock): String =
     "${formatChange(stock.change)} (${stock.changePercent})"
