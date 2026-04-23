@@ -41,6 +41,30 @@ Multi-module Gradle project:
 - Do not use arbitrary sleep values — default to `sleep 10` unless a longer wait is justified
 - Do not use arbitrary tail/head values — default to `tail -20` / `head -20` unless more lines are needed
 
+## Effort Level (`/effort`)
+
+User default is `xhigh` (set in `~/.claude/settings.json`). Switch with `/effort high` or `/effort xhigh` at the start of a task — don't toggle mid-task.
+
+**Use `xhigh` for:**
+- Architecture / module-split decisions, DI choices, data-flow design
+- Debugging anything where the cause isn't obvious (race conditions, Compose recomposition, Room invalidation, lifecycle issues)
+- Planning multi-PR work (the `/plan` flow, especially Phase 2 Plan agents)
+- Code review of subtle changes — security, concurrency, state mutation paths
+- First pass on any PR that touches the sync bridge between watch and phone
+
+**Use `high` for:**
+- Mechanical refactors (renames, package moves, imports) where correctness is easy to verify
+- Docs-only PRs (README, CLAUDE.md, workflow YAML)
+- Config bumps (dependency versions, gradle property tweaks, AVD setup)
+- Writing tests for code that's already designed and implemented
+- Small UI polish PRs after an architectural one has already landed (e.g., PR #43's follow-up back-button commit)
+
+**Rules of thumb:**
+- If the task is "one file, one obvious change," `high` is enough.
+- If the task requires tracing behaviour across modules or coordinating multiple concurrent things, start in `xhigh`.
+- Don't use `xhigh` as a default just to be safe — `high` is the sensible floor, `xhigh` is the deliberate upgrade for reasoning-heavy work.
+- If you start a task in `high` and hit a wall, switch to `xhigh` explicitly (`/effort xhigh`) and note the upgrade. Don't silently spin at `high` on a problem that isn't matching its complexity.
+
 ## Emulator Setup
 - The Wear OS emulator is required for `connectedDebugAndroidTest` — it is part of the standard pre-commit workflow
 - If no emulator is installed/running, Claude MUST install and start one — do not ask the user to do it
