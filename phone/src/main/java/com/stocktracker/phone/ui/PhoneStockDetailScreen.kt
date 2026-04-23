@@ -83,6 +83,20 @@ fun PhoneStockDetailScreen(
             )
         },
     ) { padding ->
+        // When chart data for the selected period is loaded, the header shows the
+        // period-scoped change (e.g. 1Y vs today). Before that, fall back to the
+        // 1D change from the persisted Stock row so the header never appears blank.
+        val periodChange: Double
+        val periodChangePercent: String
+        if (chart.points.size >= 2) {
+            periodChange = chart.change
+            periodChangePercent = "%.2f%%".format(chart.changePercent)
+        } else {
+            periodChange = stock.change
+            periodChangePercent = stock.changePercent
+        }
+        val sign = if (periodChange >= 0) "+" else ""
+
         Column(modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp)) {
             Text(
                 text = formatPrice(stock.price),
@@ -90,8 +104,8 @@ fun PhoneStockDetailScreen(
                 color = MaterialTheme.colorScheme.onSurface,
             )
             Text(
-                text = formatChangeWithPercent(stock),
-                color = if (stock.change >= 0) StockColors.up else StockColors.down,
+                text = "$sign${"%.2f".format(periodChange)} ($periodChangePercent)",
+                color = if (periodChange >= 0) StockColors.up else StockColors.down,
                 style = MaterialTheme.typography.bodyMedium,
             )
 

@@ -23,12 +23,14 @@ class PhoneStockDetailScreenTest {
 
     @get:Rule val composeRule = createComposeRule()
 
+    // Chart handler returns period-scoped values that match the test stock's 1D values
+    // so the header assertion stays deterministic whether chart has loaded yet or not.
     private val dataSource = ConfigurableFakeDataSource(
         chartHandler = { _, _ ->
             ChartData(
-                points = listOf(ChartPoint(1L, 100.0), ChartPoint(2L, 110.0)),
-                change = 10.0,
-                changePercent = 10.0,
+                points = listOf(ChartPoint(1L, 187.49), ChartPoint(2L, 189.84)),
+                change = 2.35,
+                changePercent = 1.25,
             )
         },
     )
@@ -40,6 +42,35 @@ class PhoneStockDetailScreenTest {
         composeRule.onNodeWithText("AAPL").assertIsDisplayed()
         composeRule.onNodeWithText("$189.84").assertIsDisplayed()
         composeRule.onNodeWithText("+2.35 (1.25%)").assertIsDisplayed()
+    }
+
+    @Test
+    fun headerUsesPeriodChange_whenChartLoaded() {
+        // Distinct chart change vs. stock's 1D change — the header must show
+        // the period-scoped value, not the persisted 1D.
+        val periodSource = ConfigurableFakeDataSource(
+            chartHandler = { _, _ ->
+                ChartData(
+                    points = listOf(ChartPoint(1L, 50.0), ChartPoint(2L, 75.0)),
+                    change = 25.0,
+                    changePercent = 50.0,
+                )
+            },
+        )
+        val periodRepo = StockRepository(periodSource, InMemoryStockDao())
+        val vm = PhoneStockDetailViewModel(periodRepo)
+        val stock = Stock("AAPL", 75.0, 1.0, "1.35%", 0L)
+        composeRule.setContent {
+            PhoneTheme {
+                PhoneStockDetailScreen(stock = stock, viewModel = vm, onBack = {}, onRemove = null)
+            }
+        }
+        composeRule.waitUntil(timeoutMillis = 3_000) {
+            composeRule.onAllNodesWithText("+25.00 (50.00%)")
+                .fetchSemanticsNodes(atLeastOneRootRequired = false)
+                .isNotEmpty()
+        }
+        composeRule.onNodeWithText("+25.00 (50.00%)").assertIsDisplayed()
     }
 
     @Test

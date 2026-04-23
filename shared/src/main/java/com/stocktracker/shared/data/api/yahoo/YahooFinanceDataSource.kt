@@ -53,7 +53,17 @@ class YahooFinanceDataSource(
             close?.let { ChartPoint(timestamp = ts * 1000, price = it) }
         }
 
-        val basePrice = meta.chartPreviousClose ?: meta.previousClose
+        // For 1D we want today's price vs the previous trading close (Yahoo's
+        // previousClose / chartPreviousClose). For longer ranges, Yahoo's
+        // chartPreviousClose often still returns the previous trading day rather
+        // than the close at the start of the requested range, which makes a "1Y"
+        // change display as the intraday delta. Fall back to the first data point
+        // in the chart series, which IS the start-of-range close.
+        val basePrice = when {
+            period == TimePeriod.ONE_DAY -> meta.chartPreviousClose ?: meta.previousClose
+            points.isNotEmpty() -> points.first().price
+            else -> meta.chartPreviousClose ?: meta.previousClose
+        }
         val change = meta.regularMarketPrice - basePrice
         val changePercent = if (basePrice != 0.0) (change / basePrice) * 100 else 0.0
 

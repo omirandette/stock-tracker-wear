@@ -60,21 +60,71 @@ class YahooFinanceDataSourceTest {
     }
 
     @Test
-    fun `getChartData computes change from chartPreviousClose`() = runTest {
-        coEvery { api.getChart("AAPL", "5d", "15m") } returns
+    fun `getChartData for ONE_DAY computes change from chartPreviousClose`() = runTest {
+        // 1D: user expects today vs yesterday, so base = previous trading close
+        coEvery { api.getChart("AAPL", "1d", "5m") } returns
             chartResponse(price = 150.0, previousClose = 148.0, chartPreviousClose = 145.0)
-        val data = ds.getChartData("AAPL", TimePeriod.FIVE_DAYS)
+        val data = ds.getChartData("AAPL", TimePeriod.ONE_DAY)
         assertEquals(5.0, data.change, 0.001)
         assertEquals((5.0 / 145.0) * 100, data.changePercent, 0.001)
     }
 
     @Test
-    fun `getChartData falls back to previousClose when chartPreviousClose is null`() = runTest {
-        coEvery { api.getChart("AAPL", "5d", "15m") } returns
+    fun `getChartData for ONE_DAY falls back to previousClose when chartPreviousClose is null`() = runTest {
+        coEvery { api.getChart("AAPL", "1d", "5m") } returns
             chartResponse(price = 150.0, previousClose = 148.0, chartPreviousClose = null)
-        val data = ds.getChartData("AAPL", TimePeriod.FIVE_DAYS)
+        val data = ds.getChartData("AAPL", TimePeriod.ONE_DAY)
         assertEquals(2.0, data.change, 0.001)
         assertEquals((2.0 / 148.0) * 100, data.changePercent, 0.001)
+    }
+
+    @Test
+    fun `getChartData for FIVE_DAYS computes change from first chart point`() = runTest {
+        // Longer periods: Yahoo's chartPreviousClose often equals previousClose (yesterday),
+        // which is wrong for a 5-day header. Compute from the start-of-range close instead.
+        coEvery { api.getChart("AAPL", "5d", "15m") } returns
+            chartResponse(
+                price = 150.0,
+                previousClose = 148.0,
+                chartPreviousClose = 148.0, // Yahoo misleadingly returns yesterday for long ranges
+                timestamps = listOf(1000L, 2000L, 3000L),
+                closes = listOf(140.0, 145.0, 150.0),
+            )
+        val data = ds.getChartData("AAPL", TimePeriod.FIVE_DAYS)
+        // Expected: base = first point (140.0), change = 150 - 140 = 10
+        assertEquals(10.0, data.change, 0.001)
+        assertEquals((10.0 / 140.0) * 100, data.changePercent, 0.001)
+    }
+
+    @Test
+    fun `getChartData for ONE_YEAR computes change from first chart point`() = runTest {
+        coEvery { api.getChart("AAPL", "1y", "1wk") } returns
+            chartResponse(
+                price = 200.0,
+                previousClose = 199.0,
+                chartPreviousClose = 199.0, // Yahoo's reporting is unreliable on long ranges
+                timestamps = listOf(1000L, 2000L),
+                closes = listOf(100.0, 200.0),
+            )
+        val data = ds.getChartData("AAPL", TimePeriod.TWELVE_MONTHS)
+        // Expected: base = first point (100.0), change = 200 - 100 = 100
+        assertEquals(100.0, data.change, 0.001)
+        assertEquals((100.0 / 100.0) * 100, data.changePercent, 0.001)
+    }
+
+    @Test
+    fun `getChartData for longer period falls back to previousClose when no chart points`() = runTest {
+        coEvery { api.getChart("AAPL", "5d", "15m") } returns
+            chartResponse(
+                price = 150.0,
+                previousClose = 148.0,
+                chartPreviousClose = null,
+                timestamps = emptyList(),
+                closes = emptyList(),
+            )
+        val data = ds.getChartData("AAPL", TimePeriod.FIVE_DAYS)
+        // No points → fall back to previousClose so change isn't undefined
+        assertEquals(2.0, data.change, 0.001)
     }
 
     @Test
